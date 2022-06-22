@@ -1,0 +1,62 @@
+---
+# Initialise OMERO Database
+# https://helm.sh/docs/topics/charts_hooks/
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "omero-server.fullname" . }}
+  labels:
+    {{- include "omero-server.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "-5"
+    helm.sh/hook-delete-policy: hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ include "omero-server.fullname" . }}
+      labels:
+        {{- include "omero-server.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: {{ include "omero-server.fullname" . }}-omerosetup
+          env:
+            - name: OMERO_ROOT_PASS
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["sh","-c"]
+          args:
+            - |
+              /usr/local/bin/omero-config-set /opt/OMERO.server/etc/grid/config.k8ssecret
+              omero db script -f /shared-data/omero_db_script.sql #--password "$OMERO_ROOT_PASS"
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
+            - name: config-k8ssecret
+              mountPath: /opt/OMERO.server/etc/grid/config.k8ssecret
+              readOnly: true
+              subPath: config.k8ssecret
+        - name: {{ include "omero-server.fullname" . }}-initdb
+          securityContext:
+            {{- toYaml .Values.podSecurityContext | nindent 12 }}
+          image: postgres:alpine
+          command: ["/bin/sh"]
+          args: ["-c","psql -d omero -f /shared-data/omero_db_script.sql -w -q -1"]
+          volumeMounts:
+            - name: shared-data
+              mountPath: /shared-data
+            - name: pgpass
+              mountPath: /.pgpass
+              readOnly: true
+              subPath: .pgpass
+      volumes:
+        - name: shared-data
+          emptyDir: { medium: "Memory" }
+        - name: config-k8ssecret
+          secret:
+            secretName: {{ include "omero-server.fullname" . }}-config
+        - name: pgpass
+          secret:
+            secretName: {{ include "omero-server.fullname" . }}-pgpass
