@@ -1,0 +1,82 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "omero-server.fullname" . }}-db-migration
+  labels:
+    {{- include "omero-server.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-1"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      labels:
+        {{- include "omero-server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Never
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{.Chart.Name}}-db-migration
+          args:
+            - |
+              omero db script -f /tmp/OMERO5.4__0.sql --password "${OMERO_ROOT_PASS}"
+          command: ["sh","-c"]
+          env:
+            - name: OMERO_ROOT_PASS
+              value: {{.Values.omero.root_pass|quote}}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tempdir
+        - name: {{.Chart.Name}}-db-migration-psql
+          args:
+            - |
+              until pg_isready -d ${PGDATABASE} -q; do echo "Waiting for database"; sleep 2; done
+              until [ -f /tmp/OMERO5.4__0.sql ]; do echo "Waiting for /tmp/OMERO5.4__0.sql"; sleep 2; done
+              psql -d {{ include "omero.postgresql.database" . }} -e -f /tmp/OMERO5.4__0.sql -q -w 
+          command: ["sh","-c"]
+          env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omero-server.fullname" . }}-db
+                  key: PGHOST
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omero-server.fullname" . }}-db
+                  key: PGPORT
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omero-server.fullname" . }}-db
+                  key: PGDATABASE
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omero-server.fullname" . }}-db
+                  key: PGUSER
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "omero-server.fullname" . }}-db
+                  key: PGPASSWORD
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: postgres:latest
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: tempdir
+      volumes:
+        - name: tempdir
+          emptyDir: {}

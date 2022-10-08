@@ -16,7 +16,8 @@ postgresql:
 Deploy OMERO
 
 ```bash
-helm repo add ...
+helm repo add restek ...
+helm repo update
 helm upgrade omero ./ --install --create-namespace --dependency-update --install --values ./values.yaml
 ```
 
@@ -65,4 +66,14 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 ## Show PostgreSQL configuration values
 helm show values bitnami/postgresql
+```
+
+Connect to database with local client
+
+```bash
+kubectl -nomerodev port-forward service/omero-postgresql 5432
+export PGDATABASE=omero
+export PGHOST=localhost
+export PGUSER=omero
+psql -c '\dt'
 ```

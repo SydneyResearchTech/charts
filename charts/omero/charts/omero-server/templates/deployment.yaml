@@ -34,19 +34,86 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
-            - name: http
-              containerPort: 80
+            - name: ice-router
+              containerPort: 4063
               protocol: TCP
-          livenessProbe:
-            httpGet:
-              path: /
-              port: http
-          readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            - name: ice-router-ssl
+              containerPort: 4064
+              protocol: TCP
+          #livenessProbe:
+          #  tcpSocket:
+          #    port: ice-router
+          #readinessProbe:
+          #  tcpSocket:
+          #    port: ice-router
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{.Values.omero.data.dir|quote}}
+              name: {{ include "omero-server.fullname" . }}-data-dir
+            - mountPath: /tmp
+              name: {{ include "omero-server.fullname" . }}-tempdir
+            - mountPath: /omero/tmp
+              name: {{ include "omero-server.fullname" . }}-tmp
+            - mountPath: /opt/OMERO.server/var
+              name: {{ include "omero-server.fullname" . }}-var
+            - mountPath: /opt/OMERO.server/etc
+              name: {{ include "omero-server.fullname" . }}-etc
+      initContainers:
+        - name: init-omero-folders
+          args:
+            - |
+              cp -a /opt/OMERO.server/etc/* /mnt
+          command: ["sh","-c"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          volumeMounts:
+            - mountPath: /mnt
+              name: {{ include "omero-server.fullname" . }}-etc
+        - name: init-omero-config-set
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - |
+              OMERO_SET='omero config set'
+              echo Initialise omero server settings
+              while read -r line; do
+                [[ $line == omero.* ]] || continue
+                echo "$OMERO_SET $line"
+                $OMERO_SET "$line"
+              done < <(find /mnt -type f -exec cat {} + |sort)
+              mkdir -p {{.Values.omero.data.dir}}/data
+              chown $UID {{.Values.omero.data.dir}}/data
+              echo "$OMERO_SET omero.data.dir {{.Values.omero.data.dir}}/data"
+              $OMERO_SET omero.data.dir "{{.Values.omero.data.dir}}/data"
+          command: ["bash","-c"]
+          volumeMounts:
+            - mountPath: {{.Values.omero.data.dir|quote}}
+              name: {{ include "omero-server.fullname" . }}-data-dir
+            - mountPath: /opt/OMERO.server/etc
+              name: {{ include "omero-server.fullname" . }}-etc
+            - mountPath: /tmp
+              name: {{ include "omero-server.fullname" . }}-tempdir
+            - mountPath: /omero/tmp
+              name: {{ include "omero-server.fullname" . }}-tmp
+            - mountPath: /mnt/config
+              name: {{ include "omero-server.fullname" . }}-config
+              readOnly: true
+            - mountPath: /mnt/secrets
+              name: {{ include "omero-server.fullname" . }}-secrets
+              readOnly: true
+        - name: init-pg-isready
+          image: postgres:latest
+          command: ["sh","-c"]
+          args:
+            - |
+              until pg_isready -h {{ include "omero.postgresql.fullname" . }} -p {{ include "omero.postgresql.port" . }}; do
+              sleep 2
+              done
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -59,3 +126,20 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: {{ include "omero-server.fullname" . }}-etc
+          emptyDir: {}
+        - name: {{ include "omero-server.fullname" . }}-tmp
+          emptyDir: {}
+        - name: {{ include "omero-server.fullname" . }}-var
+          emptyDir: {}
+        - name: {{ include "omero-server.fullname" . }}-tempdir
+          emptyDir: {}
+        - name: {{ include "omero-server.fullname" . }}-config
+          configMap:
+            name: {{ include "omero-server.fullname" . }}
+        - name: {{ include "omero-server.fullname" . }}-secrets
+          secret:
+            secretName: {{ include "omero-server.fullname" . }}
+        - name: {{ include "omero-server.fullname" . }}-data-dir
+          emptyDir: {}

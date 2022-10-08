@@ -1,0 +1,110 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "omero-web.fullname" . }}
+  labels:
+    {{- include "omero-web.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "omero-web.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "omero-web.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "omero-web.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+            - name: https
+              containerPort: 443
+              protocol: TCP
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          #readinessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/OMERO.web/etc
+              name: {{ include "omero-web.fullname" . }}-etc
+            - mountPath: /opt/OMERO.web/var
+              name: {{ include "omero-web.fullname" . }}-var
+      initContainers:
+        - name: init-omero-web-folders
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["sh","-c"]
+          args:
+            - |
+              cp -a /opt/OMERO.web/etc/* /mnt
+              chown -R {{default 0 .Values.securityContext.runAsUser}} /mnt
+          volumeMounts:
+            - mountPath: /mnt
+              name: {{ include "omero-web.fullname" . }}-etc
+        - name: init-omero-web-config-set
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - |
+              OMERO_SET='omero config set'
+              echo Initialising omero web settings
+              while read -r line; do
+                [[ $line == omero.web.* ]] || continue
+                echo "$OMERO_SET $line"
+                $OMERO_SET "$line"
+              done < <(find /mnt -type f -exec cat {} + |sort)
+          command: ["bash","-c"]
+          volumeMounts:
+            - mountPath: /opt/OMERO.web/etc
+              name: {{ include "omero-web.fullname" . }}-etc
+            - mountPath: /mnt/config
+              name: {{ include "omero-web.fullname" . }}-config
+              readOnly: true
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: {{ include "omero-web.fullname" . }}-etc
+          emptyDir: {}
+        - name: {{ include "omero-web.fullname" . }}-var
+          emptyDir: {}
+        - name: {{ include "omero-web.fullname" . }}-config
+          configMap:
+            name: {{ include "omero-web.fullname" . }}
