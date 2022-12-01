@@ -1,0 +1,61 @@
+---
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  EfsFileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      BackupPolicy: ""
+      BypassPolicyLockoutSafetyCheck: false
+      Encrypted: false
+      FileSystemPolicy: ""
+      FileSystemTags:
+        - {Key: "sydney.edu.au/organisationalUnit", Value: "Research Technology"}
+        - {Key: "sydney.edu.au/ResTek/owner", Value: "dean.taylor@sydney.edu.au"}
+        - {Key: "sydney.edu.au/ResTek/application", Value: "omero"}
+      LifecyclePolicies:
+        - TransitionToIA: "AFTER_60_DAYS"
+        - TransitionToPrimaryStorageClass: "AFTER_1_ACCESS"
+      PerformanceMode: generalPurpose
+      ProvisionedThroughputInMibps: 0.0
+      ThroughputMode: bursting
+
+  EfsMountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: {Ref: EfsFileSystem}
+      IpAddress: ""
+      SecurityGroups: []
+      SubnetId:
+
+  AuroraPostgresqlCluster:
+    Type: AWS::RDS::DBCluster
+    Properties:
+      AutoMinorVersionUpgrade: true
+      BackupRetentionPeriod: 1
+      CopyTagsToSnapshot: false
+      DatabaseName: omerodev
+      DBClusterIdentifier: "${eks_cluster_name}-${uuidv4}"
+      DBClusterInstanceClass: ###
+      DBClusterParameterGroupName: ###
+      DBInstanceParameterGroupName: ###
+      DBSubnetGroupName: ###
+      DeletionProtection: false
+      EnableCloudwatchLogsExports: []         # postgresql
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      EngineVersion: "14.5"
+      #KmsKeyId:
+      MasterUsername: omerodev-master
+      MasterUserPassword: $master_password
+      NetworkType: IPV4
+      PreferredBackupWindow: ###
+      PreferredMaintenanceWindow: ###
+      RestoreType: ???
+      StorageEncrypted: true
+      Tags:
+        - {Key: "sydney.edu.au/organisationalUnit", Value: "Research Technology"}
+        - {Key: "sydney.edu.au/ResTek/owner", Value: "dean.taylor@sydney.edu.au"}
+        - {Key: "sydney.edu.au/ResTek/application", Value: "omero"}
+      UseLatestRestorableTime: false
+      VpcSecurityGroupIds: []

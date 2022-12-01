@@ -1,0 +1,79 @@
+---
+# https://eksctl.io/usage/schema/
+# eksctl create cluster -f eks-template.yaml
+# eksctl utils describe-stacks --region=ap-southeast-2 --cluster=omerodev
+# eksctl utils update-cluster-logging --enable-types={SPECIFY-YOUR-LOG-TYPES-HERE (e.g. all)} --region=ap-southeast-2 --cluster=omerodev
+# eksctl utils schema |less
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: omerodev
+  region: ap-southeast-2
+  tags:
+    karpenter.sh/discovery: omerodev
+
+# https://docs.github.com/en/rest/overview/permissions-required-for-fine-grained-personal-access-tokens#administration
+# export GITHUB_TOKEN=
+# flux bootstrap github --owner SydneyResearchTech --path clusters/omerodev --repository gitops-flux --branch main --context dtay3678_admin@omerodev.ap-southeast-2.eksctl.io
+gitops:
+  flux:
+    gitProvider: "github"
+    flags:
+      owner: SydneyResearchTech
+      path: clusters/omerodev
+      repository: gitops-flux
+      branch: main
+
+iam:
+  serviceAccounts:
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      wellKnownPolicies:
+        awsLoadBalancerController: true
+    - metadata:
+        name: cert-manager
+        namespace: cert-manager
+      wellKnownPolicies:
+        certManager: true
+    - metadata:
+        name: ebs-csi-controller-sa
+        namespace: kube-system
+      wellKnownPolicies:
+        ebsCSIController: true
+    - metadata:
+        name: efs-csi-controller-sa
+        namespace: kube-system
+      wellKnownPolicies:
+        efsCSIController: true
+    # https://fluxcd.io/flux/components/source/helmrepositories/#aws
+    # aws iam list-policies --scope AWS --policy-usage-filter PermissionsPolicy
+    - metadata:
+        name: source-controller
+        namespace: flux-system
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+      roleOnly: true
+      tags: {}
+
+  withOIDC: true
+
+# https://karpenter.sh/v0.6.3/getting-started/
+karpenter:
+  version: "0.15.0"
+  createServiceAccount: true
+  #defaultInstanceProfile: ""
+
+managedNodeGroups:
+  - name: ng-default
+    amiFamily: AmazonLinux2
+    instanceType: m5.large
+    minSize: 1
+    maxSize: 3
+    desiredCapacity: 2
+    volumeSize: 100
+
+vpc:
+  clusterEndpoints:
+    privateAccess: false
+    publicAccess: true
