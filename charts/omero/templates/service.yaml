@@ -1,0 +1,21 @@
+{{- if not .Values.postgresql.enabled -}}
+{{- if or .Values.global.postgresql.externalIPs .Values.global.postgresql.externalName -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "omero.postgresql.fullname" . }}
+spec:
+{{- if .Values.global.postgresql.externalName }}
+  type: ExternalName
+  externalName: {{ .Values.global.postgresql.externalName }}
+{{- else if .Values.global.postgresql.externalIPs }}
+  ports:
+    - name: postgresql
+      protocol: TCP
+      port: 5432
+      targetPort: {{ include "omero.postgresql.port" . }}
+  externalIPs:
+    {{- toYaml .Values.global.postgresql.externalIPs | nindent 4 }}
+{{- end }}
+{{- end }}
+{{ end }}

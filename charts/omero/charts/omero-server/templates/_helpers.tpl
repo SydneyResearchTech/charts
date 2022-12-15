@@ -71,3 +71,10 @@ Create the name of the service account to use
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+{{/*
+Create OMERO default root password
+*/}}
+{{- define "omero-server.defaultRootPassword" }}
+{{- default (randAlphaNum 32) .Values.omero.root_pass }}
+{{- end }}

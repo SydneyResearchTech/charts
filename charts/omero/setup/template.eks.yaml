@@ -45,11 +45,19 @@ iam:
         namespace: kube-system
       wellKnownPolicies:
         efsCSIController: true
-    #- metadata:
-    #    name: aws-load-balancer-controller
-    #    namespace: kube-system
-    #  wellKnownPolicies:
-    #    awsLoadBalancerController: true
+    # https://docs.aws.amazon.com/eks/latest/userguide/aws-load-balancer-controller.html
+    - metadata:
+        name: aws-load-balancer-controller
+        namespace: kube-system
+      wellKnownPolicies:
+        awsLoadBalancerController: true
+    # https://aws-controllers-k8s.github.io/community/docs/user-docs/irsa/
+    - metadata:
+        name: ack-rds-controller
+        namespace: ack-system
+      attachPolicyARNs:
+        - arn:aws:iam::aws:policy/AmazonRDSFullAccess
+      roleOnly: false
     #- metadata:
     #    name: cert-manager
     #    namespace: cert-manager

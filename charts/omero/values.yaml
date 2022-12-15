@@ -12,19 +12,29 @@ global:
   postgresql:
     auth:
       postgresPassword: ""
-      username: "omero"
-      password: "omero"
-      database: "omero"
+      username: ""
+      password: ""
+      database: ""
       existingSecret: ""
       secretKeys:
         adminPasswordKey: ""
         userPasswordKey: ""
         replicationPasswordKey: ""
-    ## @param global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `service.ports.postgresql`)
+    existingConfigMap: ""
+    configMapKeys:
+      PGHOST: ""
+      PGHOSTADDR: ""
+      PGPORT: ""
+      PGDATABASE: ""
+      PGUSER: ""
+      PGPASSFILE: ""    # https://www.postgresql.org/docs/current/libpq-pgpass.html
+    externalIPs: []
+    externalName: ""
+    ## @param global.postgresql.service.ports.postgresql PostgreSQL service port (overrides `postgresql.service.ports.postgresql`)
     ##
-  service:
-    ports:
-      postgresql: ""
+    service:
+      ports:
+        postgresql: ""
 
 omero-server:
   enabled: true
