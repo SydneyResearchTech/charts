@@ -1,3 +1,7 @@
+{{- define "omero-web.web.server_list" -}}
+{{- printf "%s-omero-server" .Chart.Name }}
+{{- end }}
+
 {{/*
 Expand the name of the chart.
 */}}

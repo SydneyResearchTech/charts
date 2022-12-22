@@ -34,8 +34,6 @@ spec:
           psql -XqAtc "SELECT message FROM dbpatch WHERE message = 'Database ready.'" 2>/dev/null |grep -q 'Database ready.' \
             && echo "INFO: Database $PGDATABASE migrations complete" \
             || { >&2 echo "FAIL: Database $PGDATABASE migrations complete"; ERR_CODE=1; }
-          #psql -c select grantee,table_catalog,privilege_type,table_schema,table_name from information_schema.table_privileges order by grantee, table_schema, table_name;
-          #openssl s_client -showcerts -starttls postgres -connect ${PGHOST}:${PGPORT}
           exit $ERR_CODE
       env:
         {{- include "omero.postgresql.environmentVariables" . | nindent 8 }}

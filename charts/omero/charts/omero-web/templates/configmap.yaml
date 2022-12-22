@@ -1,4 +1,6 @@
 ---
+# omero/charts/omero-web/templates/configmap.yaml
+#
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -6,25 +8,17 @@ metadata:
   labels:
     {{- include "omero-web.labels" . | nindent 4 }}
 data:
-  omero.configmap: |
-{{- with .Values.omero.web }}
-    omero.web.admins {{.admins|squote}}
+  00kubernetes-configmap.omero: |
+{{- with .Values.omero }}
+{{- with .web }}
 {{- with .application_server }}
-    omero.web.application_server {{.type}}
-    omero.web.application_server.host {{.host}}
-    omero.web.application_server.max_requests {{.max_requests}}
-    omero.web.application_server.port {{.port}}
+    omero.web.application_server.host={{.host}}
+    omero.web.application_server.port={{.port}}
 {{- end }}
-    omero.web.apps {{.apps|squote}}
-    omero.web.debug {{.debug|toJson}}
-    omero.web.secret_key {{.secret_key}}
-    omero.web.server_list {{.server_list|squote}}
-    omero.web.session_engine {{.session_engine}}
-    omero.web.static_root {{.static_root}}
-    omero.web.static_url {{.static_url}}
-    omero.web.time_zone {{.time_zone}}
-    omero.web.use_x_forwarded_host {{.use_x_forwarded_host}}
-    omero.web.wsgi_args {{.wsgi_args|squote}}
-    omero.web.wsgi_timeout {{.wsgi_timeout}}
-    omero.web.wsgi_workers {{.wsgi_workers}}
+    omero.web.check_version=false
+    omero.web.debug={{.debug}}
+    omero.web.secure={{.secure}}
+    omero.web.server_list=[["omero-omero-server", 4064, "omero"]]
+    omero.web.static_url={{.static_url}}
+{{- end }}
 {{- end }}

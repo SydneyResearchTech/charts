@@ -10,11 +10,11 @@ metadata:
     #"helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   containers:
-    - name: wget
+    - name: busybox
       image: busybox
       command: ['sh','-c']
       args:
         - |
-          wget {{ include "omero-server.fullname" . }}:{{ .Values.service.port }}
-          exit 0
+          nc -zvw1 {{ include "omero-server.fullname" . }} {{ .Values.service.port }}
+          nc -zvw1 {{ include "omero-server.fullname" . }} 4064
   restartPolicy: Never

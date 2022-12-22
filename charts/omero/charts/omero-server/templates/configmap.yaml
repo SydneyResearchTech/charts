@@ -13,24 +13,19 @@ data:
 {{- with .Values.omero }}
     omero.checksum.supported={{.checksum.supported}}
     omero.data.dir={{.data.dir}}
-    omero.managed.dir={{.managed.dir}}
-{{- with .db }}
-    omero.db.authority={{.authority}}
-    omero.db.dialect={{.dialect}}
-    omero.db.driver={{.driver}}
-    omero.db.patch={{.patch}}
-    omero.db.poolsize={{.poolsize}}
-    omero.db.prepared_statement_cache_size={{.prepared_statement_cache_size}}
-    omero.db.profile={{.profile}}
-    omero.db.sql_action_class={{.sql_action_class}}
-    omero.db.statistics={{.statistics}}
-    omero.db.version={{.version}}
+{{- with .fs.repo }}
+    omero.fs.repo.path={{.path}}
+    omero.fs.repo.path_rules={{.path_rules}}
 {{- end }}
 {{- with .glacier2.IceSSL }}
     omero.glacier2.IceSSL.CAs={{.CAs}}
     omero.glacier2.IceSSL.CertFile={{.CertFile}}
     omero.glacier2.IceSSL.Ciphers={{.Ciphers}}
+  {{- if .DefaultDir }}
     omero.glacier2.IceSSL.DefaultDir={{.DefaultDir}}
+  {{- else }}
+    omero.glacier2.IceSSL.DefaultDir={{$.Values.omero.data.dir}}/certs
+  {{- end }}
     omero.glacier2.IceSSL.Password={{.Password}}
     omero.glacier2.IceSSL.ProtocolVersionMax={{.ProtocolVersionMax}}
     omero.glacier2.IceSSL.Protocols={{.Protocols}}

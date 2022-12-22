@@ -2,6 +2,11 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 #
+
+omeroTmpDir: "/opt/omero/server/omero/tmp"
+omeroDir: "/opt/omero/web/OMERO.web"
+omeroLoadDir: "/omero-config.d"
+
 # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#web-configuration
 # @param omero.web.admins A list of people who get code error notifications whenever the application identifies a broken link or raises an unhandled exception that results in an internal server error
 # @param omero.web.application_server OMERO.web is configured to run in Gunicorn as a generic WSGI (TCP)application by default
@@ -103,8 +108,10 @@ omero:
     caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
     chunk_size: 1048576
     cors_origin_allow_all: false
+    debug: false
     # ...
     secret_key: ""
+    secure: false
     server_list: '[["localhost",4064,"omero"]]'
     session_engine: 'omeroweb.filesessionstore'     # https://docs.djangoproject.com/en/1.11/ref/settings/#session-engine
     static_root: "/opt/OMERO.server/var/static"
@@ -122,7 +129,7 @@ enabled: true
 replicaCount: 1
 
 image:
-  repository: openmicroscopy/omero-web
+  repository: ghcr.io/sydneyresearchtech/openmicroscopy-omero-web
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -155,7 +162,7 @@ securityContext: {}
 
 service:
   type: ClusterIP
-  port: 80
+  port: 4080
 
 ingress:
   enabled: false

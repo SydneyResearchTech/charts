@@ -1,3 +1,6 @@
+---
+# omero/charts/omero-web/templates/deployment.yaml
+#
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,7 +18,8 @@ spec:
     metadata:
       {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
+        {{- if .Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . |sha256sum }}
       {{- end }}
       labels:
         {{- include "omero-web.selectorLabels" . | nindent 8 }}
@@ -34,11 +38,33 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
+            - name: omero-web
+              containerPort: 4080
+              protocol: TCP
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: omero-web
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: {{.Values.omeroLoadDir}}/00kubernetes-configmap.omero
+              name: omero-config
+              readOnly: true
+              subPath: 00kubernetes-configmap.omero
+            - mountPath: {{ .Values.omeroDir }}/var/static
+              name: web-static
+        - name: {{ .Chart.Name }}-static
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: nginx
+          ports:
             - name: http
               containerPort: 80
-              protocol: TCP
-            - name: https
-              containerPort: 443
               protocol: TCP
           #livenessProbe:
           #  httpGet:
@@ -51,42 +77,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /opt/OMERO.web/etc
-              name: {{ include "omero-web.fullname" . }}-etc
-            - mountPath: /opt/OMERO.web/var
-              name: {{ include "omero-web.fullname" . }}-var
-      initContainers:
-        - name: init-omero-web-folders
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["sh","-c"]
-          args:
-            - |
-              cp -a /opt/OMERO.web/etc/* /mnt
-              chown -R {{default 0 .Values.securityContext.runAsUser}} /mnt
-          volumeMounts:
-            - mountPath: /mnt
-              name: {{ include "omero-web.fullname" . }}-etc
-        - name: init-omero-web-config-set
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          args:
-            - |
-              OMERO_SET='omero config set'
-              echo Initialising omero web settings
-              while read -r line; do
-                [[ $line == omero.web.* ]] || continue
-                echo "$OMERO_SET $line"
-                $OMERO_SET "$line"
-              done < <(find /mnt -type f -exec cat {} + |sort)
-          command: ["bash","-c"]
-          volumeMounts:
-            - mountPath: /opt/OMERO.web/etc
-              name: {{ include "omero-web.fullname" . }}-etc
-            - mountPath: /mnt/config
-              name: {{ include "omero-web.fullname" . }}-config
+            - mountPath: /usr/share/nginx/html/{{.Values.omero.web.static_url}}
+              name: web-static
               readOnly: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
@@ -101,10 +93,8 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        - name: {{ include "omero-web.fullname" . }}-etc
-          emptyDir: {}
-        - name: {{ include "omero-web.fullname" . }}-var
-          emptyDir: {}
-        - name: {{ include "omero-web.fullname" . }}-config
+        - name: omero-config
           configMap:
-            name: {{ include "omero-web.fullname" . }}
+            name: {{ include "omero-server.fullname" . }}
+        - name: web-static
+          emptyDir: {}

@@ -93,21 +93,9 @@ Create OMERO default root password
 - {name: _JAVA_OPTIONS, value: "-Djava.io.tmpdir={{ .Values.omeroTmpDir }}"}
 {{- end }}
 {{- define "omero-server.volumeMounts" -}}
-- mountPath: "{{ .Values.omeroDir }}/lib/scripts/.omero"
-  name: omero-blitz
-- mountPath: "{{ .Values.omeroDir }}/etc"
-  name: omero-etc
-- mountPath: "{{ .Values.omeroDir }}/etc/grid"
-  name: omero-etc-grid
-- mountPath: "{{ .Values.omeroDir }}/var"
-  name: omero-var
 - mountPath: {{ .Values.omeroTmpDir |quote }}
   name: omero-temp-dir
 {{- end }}
 {{- define "omero-server.volumes" -}}
-- {name: omero-blitz, emptyDir: {}}
-- {name: omero-etc, emptyDir: {}}
-- {name: omero-etc-grid, emptyDir: {}}
-- {name: omero-var, emptyDir: {}}
 - {name: omero-temp-dir, emptyDir: {}}
 {{- end }}
