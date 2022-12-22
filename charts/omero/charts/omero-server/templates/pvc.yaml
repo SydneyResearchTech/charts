@@ -1,0 +1,27 @@
+---
+# omero/charts/omero-server/templates/pvc.yaml
+#
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "omero-server.fullname" . }}-data
+  labels:
+    {{- include "omero-server.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.omero.data.accessMode }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .Values.omero.data.size }}
+{{- if or .Values.omero.data.storageClass .Values.global.storageClass -}}
+{{- $storageClass := (.Values.omero.data.storageClass |default .Values.global.storageClass) -}}
+{{- if eq "-" $storageClass -}}
+{{- printf "storageClassName: \"\"" |nindent 2 }}
+{{- else -}}
+{{- printf "storageClassName: %s" $storageClass |nindent 2 }}
+{{- end -}}
+{{- end }}
+{{- if .Values.omero.data.selector -}}
+{{ toYaml .Values.omero.data.selector |nindent 2 }}
+{{- end }}

@@ -1,3 +1,5 @@
+# omero/charts/omero-server/templates/_helpers.tpl
+#
 {{- define "omero-server.conf" }}
 {{- $dictIn := . }}
 {{- range (keys $dictIn |sortAlpha) }}
@@ -77,4 +79,35 @@ Create OMERO default root password
 */}}
 {{- define "omero-server.defaultRootPassword" }}
 {{- default (randAlphaNum 32) .Values.omero.root_pass }}
+{{- end }}
+
+# https://docs.python.org/3/library/tempfile.html
+# https://docs.python.org/3/using/cmdline.html
+# https://docs.oracle.com/javase/8/docs/technotes/tools/unix/java.html
+# https://docs.oracle.com/javase/tutorial/essential/environment/sysprop.html
+{{- define "omero-server.environmentVariables" -}}
+- {name: OMERODIR, value: {{ .Values.omeroDir |quote }}}
+- {name: HOME, value: {{ .Values.omeroTmpDir |quote }}}
+- {name: TMPDIR, value: {{ .Values.omeroTmpDir |quote }}}
+- {name: OMERO_TMPDIR, value: {{ .Values.omeroTmpDir |quote }}}
+- {name: _JAVA_OPTIONS, value: "-Djava.io.tmpdir={{ .Values.omeroTmpDir }}"}
+{{- end }}
+{{- define "omero-server.volumeMounts" -}}
+- mountPath: "{{ .Values.omeroDir }}/lib/scripts/.omero"
+  name: omero-blitz
+- mountPath: "{{ .Values.omeroDir }}/etc"
+  name: omero-etc
+- mountPath: "{{ .Values.omeroDir }}/etc/grid"
+  name: omero-etc-grid
+- mountPath: "{{ .Values.omeroDir }}/var"
+  name: omero-var
+- mountPath: {{ .Values.omeroTmpDir |quote }}
+  name: omero-temp-dir
+{{- end }}
+{{- define "omero-server.volumes" -}}
+- {name: omero-blitz, emptyDir: {}}
+- {name: omero-etc, emptyDir: {}}
+- {name: omero-etc-grid, emptyDir: {}}
+- {name: omero-var, emptyDir: {}}
+- {name: omero-temp-dir, emptyDir: {}}
 {{- end }}

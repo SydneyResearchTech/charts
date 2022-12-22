@@ -1,0 +1,42 @@
+---
+# omero/charts/omero-server/templates/tests/test-db.yaml
+# https://www.postgresql.org/docs/8.4/libpq-connect.html#LIBPQ-CONNECT-SSLMODE  ;PGSSLMODE
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "omero-server.fullname" . }}-test-db"
+  labels:
+    {{- include "omero-server.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "-5"
+spec:
+  containers:
+    - name: postgres
+      image: postgres:latest
+      command: ['sh','-c']
+      args:
+        - |
+          ERR_CODE=0
+          PGSSLMODE=verify-full pg_isready \
+            || { >&2 echo "FAIL: server certificate is issued by a trusted CA and/or server host name matches"; ERR_CODE=1; }
+          PGSSLMODE=verify-ca pg_isready \
+            || { >&2 echo "FAIL: server certificate is issued by a trusted certificate authority (CA)"; ERR_CODE=1; }
+          PGSSLMODE=prefer pg_isready \
+            && ERR_CODE=0 \
+            || { >&2 echo "FAIL: connection"; ERR_CODE=1; }
+          psql -lXqAt |cut -d'|' -f1 |grep -qw $PGDATABASE \
+            || { >&2 echo "FAIL: Database $PGDATABASE does not exist"; ERR_CODE=1; }
+          psql postgres -tXAc "SELECT 1 FROM pg_roles WHERE rolname='${PGUSER}'" |grep -q 1 \
+            && echo "INFO: Database user $PGUSER exists" \
+            || { >&2 echo "FAIL: Database user $PGUSER exists"; ERR_CODE=1; }
+          psql -qAtc '\du+' |sed -n "/^${PGDATABASE}|/p"
+          psql -XqAtc "SELECT message FROM dbpatch WHERE message = 'Database ready.'" 2>/dev/null |grep -q 'Database ready.' \
+            && echo "INFO: Database $PGDATABASE migrations complete" \
+            || { >&2 echo "FAIL: Database $PGDATABASE migrations complete"; ERR_CODE=1; }
+          #psql -c select grantee,table_catalog,privilege_type,table_schema,table_name from information_schema.table_privileges order by grantee, table_schema, table_name;
+          #openssl s_client -showcerts -starttls postgres -connect ${PGHOST}:${PGPORT}
+          exit $ERR_CODE
+      env:
+        {{- include "omero.postgresql.environmentVariables" . | nindent 8 }}
+  restartPolicy: Never

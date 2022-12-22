@@ -1,3 +1,5 @@
+# https://www.postgresql.org/docs/current/libpq-envars.html
+#
 {{- define "omero.postgresql.fullname" -}}
 {{- printf "%s-%s" .Release.Name "postgresql" | trunc 63 | trimSuffix "-" }}
 {{- end }}

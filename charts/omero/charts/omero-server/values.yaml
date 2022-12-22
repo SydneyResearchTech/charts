@@ -44,9 +44,9 @@ global:
         postgresql: ""
 
 omeroPrefix: ""
-omeroTmpDir: ""
+omeroTmpDir: "/opt/omero/server/omero/tmp"
 omeroDir: "/opt/omero/server/OMERO.server"
-omeroLoadDir: "/opt/omero/server/config"
+omeroLoadDir: "/omero-config.d"
 
 ## @section Config parameters (https://docs.openmicroscopy.org/omero/5.6.3/sysadmins/config.html)
 omero:
@@ -58,6 +58,10 @@ omero:
     supported: "SHA1-160,MD5-128,Murmur3-128,Murmur3-32,CRC-32,Adler-32,File-Size-64"
   data:
     dir: "/OMERO"
+    accessMode: ReadWriteMany
+    size: 1Gi
+    selector: {}        # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+    storageClass: ""
   # @param omero.fs.repo.path Template for FS managed repository paths
   # @param omero.fs.repo.path_rules Rules to apply to judge the acceptability of FS paths for writing into omero.managed.dir
   fs:
@@ -76,11 +80,12 @@ omero:
     IceSSL:
       CAs: server.pem
       CertFile: server.p12
-      Ciphers: HIGH
+      Ciphers: ADH:!LOW:!MD5:!EXP:!3DES:@STRENGTH
       DefaultDir: /OMERO/certs
       Password: '*******'
       ProtocolVersionMax: TLS1_2
       Protocols: TLS1_0,TLS1_1,TLS1_2
+      VerifyPeer: 0
       existingSecretName: ""
   # @param omero.managed.dir 
   managed:
@@ -191,8 +196,8 @@ serviceAccount:
 
 podAnnotations: {}
 
-podSecurityContext: {}
-  # fsGroup: 2000
+podSecurityContext:
+  fsGroup: 1000
 
 securityContext:
   # capabilities:
@@ -201,6 +206,7 @@ securityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1000
+  runAsGroup: 1000
 
 service:
   type: ClusterIP

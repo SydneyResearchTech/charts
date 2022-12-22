@@ -13,10 +13,9 @@ spec:
       {{- include "omero-server.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- if .Values.podAnnotations }}{{ toYaml .Values.podAnnotations | nindent 8 }}{{ end }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . |sha256sum }}
       labels:
         {{- include "omero-server.selectorLabels" . | nindent 8 }}
     spec:
@@ -34,34 +33,8 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: CONFIG_omero_db_host
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "omero-server.fullname" . }}-db
-                  key: PGHOST
-            - name: CONFIG_omero_db_name
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "omero-server.fullname" . }}-db
-                  key: PGDATABASE
-            - name: CONFIG_omero_db_pass
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "omero-server.fullname" . }}-db
-                  key: PGPASSWORD
-            - name: CONFIG_omero_db_port
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "omero-server.fullname" . }}-db
-                  key: PGPORT
-            - name: CONFIG_omero_db_user
-              valueFrom:
-                secretKeyRef:
-                  name: {{ include "omero-server.fullname" . }}-db
-                  key: PGUSER
-            - name: OMERODIR
-              value: {{ .Values.omeroDir }}
-            - name: ROOTPASS
+            {{- include "omero.postgresql.environmentVariables" . | nindent 12 }}
+            {{- include "omero-server.environmentVariables" . | nindent 12 }}
           ports:
             - name: ice-router
               containerPort: 4063
@@ -69,50 +42,34 @@ spec:
             - name: ice-router-ssl
               containerPort: 4064
               protocol: TCP
-          livenessProbe:
-            tcpSocket:
-              port: ice-router
+          #livenessProbe:
+          #  tcpSocket:
+          #    port: ice-router
           readinessProbe:
             tcpSocket:
               port: ice-router
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            {{- include "omero-server.volumeMounts" . |nindent 12 }}
+            - mountPath: {{ .Values.omero.data.dir |quote }}
+              name: omero-data-dir
             - mountPath: {{.Values.omeroLoadDir}}/00kubernetes-configmap.omero
               name: {{ include "omero-server.fullname" . }}-config
               readOnly: true
               subPath: 00kubernetes-configmap.omero
-            - mountPath: {{.Values.omero.data.dir|quote}}
-              name: {{ include "omero-server.fullname" . }}-data-dir
-            - mountPath: /tmp
-              name: {{ include "omero-server.fullname" . }}-tempdir
-            - mountPath: /omero/tmp
-              name: {{ include "omero-server.fullname" . }}-tmp
-            - mountPath: {{.Values.omeroDir}}/var
-              name: {{ include "omero-server.fullname" . }}-var
-            - mountPath: {{.Values.omeroDir}}/etc
-              name: {{ include "omero-server.fullname" . }}-etc
       initContainers:
         - name: init-pg-isready
-          image: postgres:latest
+          image: postgres
           command: ["sh","-c"]
           args:
             - |
-              until env -u PGDATABASE -u PGUSER -u PGPASSWORD pg_isready; do
-              sleep 2
+              until pg_isready; do echo "waiting for database connection"; sleep 2; done
+              until psql -lXqAt |cut -d'|' -f1 |grep -qw ${PGDATABASE}; do echo "waiting for database ${PGDATABASE}"; sleep 2; done
+              until psql -XqAtc "SELECT message FROM dbpatch WHERE message = 'Database ready.'" 2>/dev/null |grep -q 'Database ready.'; do
+                echo "waiting for database ${PGDATABASE}"
+                sleep 2
               done
-              psql -U postgres -w <<EOF
-              DO $$
-                BEGIN
-                  BEGIN
-                    CREATE USER $PGUSER WITH PASSWORD $PGPASSWORD NOCREATEDB;
-                  EXCEPTION
-                    WHEN duplicate_object THEN RAISE NOTICE '%, moving to next statement', SQLERRM USING ERRCODE = SQLSTATE;
-                  END;
-                  GRANT ALL PRIVILEGES ON DATABASE $PGDATABASE TO $PGUSER;
-                END;
-              $$;
-              EOF
           env:
             {{- include "omero.postgresql.environmentVariables" . | nindent 12 }}
       {{- with .Values.nodeSelector }}
@@ -128,19 +85,10 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        - name: {{ include "omero-server.fullname" . }}-etc
-          emptyDir: {}
-        - name: {{ include "omero-server.fullname" . }}-tmp
-          emptyDir: {}
-        - name: {{ include "omero-server.fullname" . }}-var
-          emptyDir: {}
-        - name: {{ include "omero-server.fullname" . }}-tempdir
-          emptyDir: {}
+        {{- include "omero-server.volumes" . |nindent 8 }}
+        - name: omero-data-dir
+          persistentVolumeClaim:
+            claimName: {{ include "omero-server.fullname" . }}-data
         - name: {{ include "omero-server.fullname" . }}-config
           configMap:
             name: {{ include "omero-server.fullname" . }}
-        - name: {{ include "omero-server.fullname" . }}-secrets
-          secret:
-            secretName: {{ include "omero-server.fullname" . }}
-        - name: {{ include "omero-server.fullname" . }}-data-dir
-          emptyDir: {}

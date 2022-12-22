@@ -6,10 +6,15 @@ metadata:
     {{- include "omero-server.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
+    "helm.sh/hook-weight": "5"
+    #"helm.sh/hook-delete-policy": hook-succeeded,hook-failed
 spec:
   containers:
     - name: wget
       image: busybox
-      command: ['wget']
-      args: ['{{ include "omero-server.fullname" . }}:{{ .Values.service.port }}']
+      command: ['sh','-c']
+      args:
+        - |
+          wget {{ include "omero-server.fullname" . }}:{{ .Values.service.port }}
+          exit 0
   restartPolicy: Never
