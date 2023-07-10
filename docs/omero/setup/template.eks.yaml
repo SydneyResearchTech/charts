@@ -26,7 +26,7 @@ gitops:
     gitProvider: "github"
     flags:
       owner: SydneyResearchTech
-      path: clusters/template
+      path: clusters/${CLUSTER_NAME}
       repository: gitops-flux
       branch: main
 
@@ -75,6 +75,8 @@ iam:
 managedNodeGroups:
   - name: ng-default
     amiFamily: AmazonLinux2
+    disableIMDSv1: true
+    disablePodIMDS: true
     instanceType: m5.large
     minSize: 1
     maxSize: 3

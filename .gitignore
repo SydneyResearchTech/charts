@@ -2,3 +2,4 @@
 Chart.lock
 **/charts/*.tgz
 **/tmp/
+/charts/keycloak/
