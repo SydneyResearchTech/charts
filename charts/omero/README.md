@@ -16,7 +16,7 @@ postgresql:
 Deploy OMERO
 
 ```bash
-helm repo add restek ...
+helm repo add restek https://SydneyResearchTech.github.io/charts
 helm repo update
 helm upgrade omero ./ --install --create-namespace --dependency-update --install --values ./values.yaml
 ```
