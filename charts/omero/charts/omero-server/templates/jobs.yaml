@@ -10,7 +10,7 @@ metadata:
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "-5"
-    "helm.sh/hook-delete-policy": hook-succeeded
+    #"helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
@@ -41,10 +41,14 @@ spec:
           command: ["sh","-c"]
           args:
             - |
-              until [ -f /scratch/OMERO5.4__0.sql ]; do echo "waiting for sql"; sleep 2; done
-              until tail -n1 /scratch/OMERO5.4__0.sql |grep -q 'COMMIT;'; do echo "waiting for sql completion"; sleep 2; done
-              until pg_isready; do echo "waiting for database connection"; sleep 2; done
-              until psql -lXqAt |cut -d'|' -f1 |grep -qw ${PGDATABASE}; do echo "waiting for database ${PGDATABASE}"; sleep 2; done
+              echo "waiting for sql"
+              until [ -f /scratch/OMERO5.4__0.sql ]; do sleep 2; done
+              echo "waiting for sql completion"
+              until tail -n1 /scratch/OMERO5.4__0.sql |grep -q 'COMMIT;'; do sleep 2; done
+              echo "waiting for database connection"
+              until pg_isready; do sleep 2; done
+              echo "waiting for database ${PGDATABASE}"
+              until psql -lXqAt |cut -d'|' -f1 |grep -qw ${PGDATABASE}; do sleep 2; done
               echo 'psql -Xe </scratch/OMERO5.4__0.sql'
               psql -Xe </scratch/OMERO5.4__0.sql
           env:

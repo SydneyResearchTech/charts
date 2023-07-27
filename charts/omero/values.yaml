@@ -46,4 +46,4 @@ omero-web:
 ## Please reference [PostgreSQL packaged by Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/postgresql/) for more details
 ##
 postgresql:
-  enabled: true
+  enabled: false

@@ -18,7 +18,7 @@ Deploy OMERO
 ```bash
 helm repo add restek https://SydneyResearchTech.github.io/charts
 helm repo update
-helm upgrade omero ./ --install --create-namespace --dependency-update --install --values ./values.yaml
+helm upgrade omero ./ -nomero --install --create-namespace --dependency-update --values ./tmp/values.yaml
 ```
 
 Show OMERO chart setting values
@@ -39,7 +39,12 @@ This chart bootstraps an OMERO deployment on a [Kubernetes](https://kubernetes.i
 
 ## External Database configuration
 
-```yaml
+```SQL
+openssl -rand base64 64
+
+CREATE ROLE omerodev WITH ENCRYPTED PASSWORD '';
+CREATE DATABASE omerodev;
+GRANT ALL PRIVILEGES ON DATABASE ${DBNAME} to ${DBNAME};
 ```
 
 ## Chart development

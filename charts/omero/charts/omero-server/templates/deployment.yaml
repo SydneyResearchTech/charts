@@ -64,12 +64,14 @@ spec:
           command: ["sh","-c"]
           args:
             - |
-              until pg_isready; do echo "waiting for database connection"; sleep 2; done
-              until psql -lXqAt |cut -d'|' -f1 |grep -qw ${PGDATABASE}; do echo "waiting for database ${PGDATABASE}"; sleep 2; done
-              until psql -XqAtc "SELECT message FROM dbpatch WHERE message = 'Database ready.'" 2>/dev/null |grep -q 'Database ready.'; do
-                echo "waiting for database ${PGDATABASE}"
-                sleep 2
-              done
+              echo "waiting for database connection"
+              until pg_isready; do sleep 2; done
+              echo "waiting for database ${PGDATABASE}"
+              until psql -lXqAt |cut -d'|' -f1 |grep -qw ${PGDATABASE}; do sleep 2; done
+              #echo "waiting for database ${PGDATABASE} dbpatch message Database ready."
+              #until psql -XqAtc "SELECT message FROM dbpatch WHERE message = 'Database ready.'" 2>/dev/null |grep -q 'Database ready.'; do
+              #  sleep 2
+              #done
           env:
             {{- include "omero.postgresql.environmentVariables" . | nindent 12 }}
       {{- with .Values.nodeSelector }}

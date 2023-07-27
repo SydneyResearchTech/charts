@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "non-empty-string": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "properties": {
+    "omero": {
+      "description": "",
+      "properties": {
+        "web": {
+          "description": "",
+          "properties": {
+            "secret_key": {
+              "description": "sets SECRET_KEY for a particular Django installation",
+              "$ref": "#/definitions/nonEmptyString"
+            }
+          },
+          "required": ["secret_key"],
+          "type": "object"
+        }
+      },
+      "required": ["web"],
+      "type": "object"
+    }
+  },
+  "required": ["omero"],
+  "title": "Values",
+  "type": "object"
+}

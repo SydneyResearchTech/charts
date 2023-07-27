@@ -17,7 +17,7 @@
 {{- end }}
 
 {{- define "omero.postgresql.port" -}}
-{{- .Values.global.postgresql.service.ports.postgresql|default "5432" }}
+{{- .Values.global.postgresql.service.ports.postgresql|default "5432"|quote }}
 {{- end }}
 
 {{- define "omero.postgresql.username" -}}
