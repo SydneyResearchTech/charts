@@ -35,6 +35,8 @@ spec:
           env:
             {{- include "omero.postgresql.environmentVariables" . | nindent 12 }}
             {{- include "omero-server.environmentVariables" . | nindent 12 }}
+            - name: ROOTPASS
+              value: {{ include "omero-server.defaultRootPassword" . }}
           ports:
             - name: ice-router
               containerPort: 4063

@@ -1,3 +1,15 @@
+{{- define "omero.config" -}}
+{{- $omero := .omero -}}
+{{- $omero_cfg := .omero_cfg -}}
+{{- if ne (kindOf $omero) "map" }}
+  {{- printf "omero.%s=%s\n" (join "." $omero_cfg) (trimAll "\"" (toJson $omero)) }}
+{{- else }}
+  {{- range $k, $v := $omero }}
+    {{- include "omero.config" (dict "omero" $v "omero_cfg" (append $omero_cfg $k)) }}
+  {{- end }}
+{{- end }}
+{{- end }}
+
 # https://www.postgresql.org/docs/current/libpq-envars.html
 #
 {{- define "omero.postgresql.fullname" -}}

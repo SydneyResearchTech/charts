@@ -10,24 +10,4 @@ metadata:
     {{- include "omero-server.labels" . | nindent 4 }}
 data:
   00kubernetes-configmap.omero: |
-{{- with .Values.omero }}
-    omero.checksum.supported={{.checksum.supported}}
-    omero.data.dir={{.data.dir}}
-{{- with .fs.repo }}
-    omero.fs.repo.path={{.path}}
-    omero.fs.repo.path_rules={{.path_rules}}
-{{- end }}
-{{- with .glacier2.IceSSL }}
-    omero.glacier2.IceSSL.CAs={{.CAs}}
-    omero.glacier2.IceSSL.CertFile={{.CertFile}}
-    omero.glacier2.IceSSL.Ciphers={{.Ciphers}}
-  {{- if .DefaultDir }}
-    omero.glacier2.IceSSL.DefaultDir={{.DefaultDir}}
-  {{- else }}
-    omero.glacier2.IceSSL.DefaultDir={{$.Values.omero.data.dir}}/certs
-  {{- end }}
-    omero.glacier2.IceSSL.Password={{.Password}}
-    omero.glacier2.IceSSL.ProtocolVersionMax={{.ProtocolVersionMax}}
-    omero.glacier2.IceSSL.Protocols={{.Protocols}}
-{{- end }}
-{{- end }}
+    {{- include "omero.config" (dict "omero" .Values.omero "omero_cfg" list) | nindent 4 }}

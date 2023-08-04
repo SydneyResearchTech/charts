@@ -47,6 +47,9 @@ spec:
             pathType: {{ .pathType }}
             {{- end }}
             backend:
+            {{- if .backend }}
+              {{- .backend|toYaml|nindent 14 }}
+            {{- else }}
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
                 name: {{ $fullName }}
@@ -56,6 +59,7 @@ spec:
               serviceName: {{ $fullName }}
               servicePort: {{ $svcPort }}
               {{- end }}
+            {{- end }}
           {{- end }}
     {{- end }}
 {{- end }}

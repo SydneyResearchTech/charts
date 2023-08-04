@@ -78,7 +78,7 @@ Create the name of the service account to use
 Create OMERO default root password
 */}}
 {{- define "omero-server.defaultRootPassword" }}
-{{- default (randAlphaNum 32) .Values.omero.root_pass }}
+{{- default (randAlphaNum 32) .Values.omeroRootPass }}
 {{- end }}
 
 # https://docs.python.org/3/library/tempfile.html

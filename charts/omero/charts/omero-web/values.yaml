@@ -275,6 +275,14 @@ service:
   type: ClusterIP
   port: 4080
 
+services:
+  web:
+    type: ClusterIP
+    port: 4080
+  static:
+    type: ClusterIP
+    port: 8080
+
 ingress:
   enabled: false
   className: ""
@@ -286,6 +294,18 @@ ingress:
       paths:
         - path: /
           pathType: ImplementationSpecific
+          backend:
+            service:
+              name: omero-web-hl
+              port:
+                number: 4080
+        - path: /static/
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: omero-web-static-hl
+              port:
+                number: 8080
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:

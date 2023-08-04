@@ -62,21 +62,28 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: nginx
+          env:
+            - {name: NGINX_PORT, value: "8080"}
           ports:
             - name: http
-              containerPort: 80
+              containerPort: 8080
               protocol: TCP
           #livenessProbe:
           #  httpGet:
           #    path: /
           #    port: http
-          #readinessProbe:
-          #  httpGet:
-          #    path: /
-          #    port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - mountPath: /var/cache/nginx
+              name: nginx-cache
+            - mountPath: /var/run
+              name: nginx-run
+            #- mountPath: /etc/nginx/nginx.conf
             - mountPath: /usr/share/nginx/html/{{.Values.omero.web.static_url}}
               name: web-static
               readOnly: true
@@ -97,4 +104,8 @@ spec:
           configMap:
             name: {{ include "omero-server.fullname" . }}
         - name: web-static
+          emptyDir: {}
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
           emptyDir: {}
