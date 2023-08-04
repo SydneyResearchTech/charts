@@ -28,7 +28,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
-          args: ["omero","admin","start","--foreground","etc/grid/default.xml","debug"]
+          args: ["omero","admin","start","--foreground",{{ .Values.omeroDescriptor }},{{ .Values.omeroTargets }}]
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -45,38 +45,46 @@ spec:
             - name: ice-router-ssl
               containerPort: 4064
               protocol: TCP
-          #livenessProbe:
-          #  tcpSocket:
-          #    port: ice-router
+          livenessProbe:
+            tcpSocket:
+              port: ice-router
           readinessProbe:
             tcpSocket:
               port: ice-router
+          startupProbe:
+            tcpSocket:
+              port: ice-router
+            failureThreshold: 30
+            periodSeconds: 10
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
             {{- include "omero-server.volumeMounts" . |nindent 12 }}
+            - mountPath: /opt/omero/server/OMERO.server/var/log
+              name: logs
             - mountPath: {{ .Values.omero.data.dir |quote }}
               name: omero-data-dir
             - mountPath: {{.Values.omeroLoadDir}}/00kubernetes-configmap.omero
               name: {{ include "omero-server.fullname" . }}-config
               readOnly: true
               subPath: 00kubernetes-configmap.omero
-        - name: {{ .Chart.Name }}-logs
-          securityContext:
-            {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- range $i,$v := .Values.omeroLogFiles }}
+        - name: logs-{{ $i }}
           image: busybox
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
           command: ["sh","-c"]
           args:
             - |
-              until [ -f $MASTER_OUT ]; do sleep 2; done
-              tail -f $MASTER_OUT
-              unitl [ -f $MASTER_ERR ]; do sleep 2; done
-              >&2 tail -f $MASTER_ERR
+              until [ -f "${LOG_FILE}" ]; do sleep 2; done
+              tail -f "${LOG_FILE}"
           env:
-            - {name: MASTER_OUT, value: /opt/omero/server/OMERO.server/var/log/master.out}
-            - {name: MASTER_ERR, value: /opt/omero/server/OMERO.server/var/log/master.err}
+            - {name: LOG_FILE, value: {{ $v }}}
           volumeMounts:
-            {{- include "omero-server.volumeMounts" . |nindent 12 }}
+            - mountPath: /opt/omero/server/OMERO.server/var/log
+              name: logs
+              readOnly: true
+      {{- end }}
       initContainers:
         - name: init-pg-isready
           image: postgres
@@ -107,6 +115,7 @@ spec:
       {{- end }}
       volumes:
         {{- include "omero-server.volumes" . |nindent 8 }}
+        - {name: logs, emptyDir: {}}
         - name: omero-data-dir
           persistentVolumeClaim:
             claimName: {{ include "omero-server.fullname" . }}-data

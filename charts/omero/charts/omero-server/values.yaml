@@ -43,6 +43,9 @@ global:
   ##
   storageClass: ""
 
+omeroDescriptor: "etc/grid/default.xml"
+omeroTargets: ""      # debug|trace
+
 omeroPrefix: ""
 omeroTmpDir: "/opt/omero/server/omero/tmp"
 omeroDir: "/opt/omero/server/OMERO.server"
@@ -57,6 +60,19 @@ omeroData:
 omeroRootPass: ""
 
 omeroGlacier2IceSSLExistingSecretName: ""
+
+# WORKAROUND: Present omero server logs
+omeroLogFiles:
+- /opt/omero/server/OMERO.server/var/log/Blitz-0.log
+- /opt/omero/server/OMERO.server/var/log/DropBox.log
+- /opt/omero/server/OMERO.server/var/log/FileServer.log
+- /opt/omero/server/OMERO.server/var/log/Indexer-0.log
+- /opt/omero/server/OMERO.server/var/log/MonitorServer.log
+- /opt/omero/server/OMERO.server/var/log/PixelData-0.log
+- /opt/omero/server/OMERO.server/var/log/Processor-0.log
+- /opt/omero/server/OMERO.server/var/log/Tables-0.log
+- /opt/omero/server/OMERO.server/var/log/master.err
+- /opt/omero/server/OMERO.server/var/log/master.out
 
 ## @section Config parameters (https://docs.openmicroscopy.org/omero/5.6.3/sysadmins/config.html)
 omero:
@@ -86,7 +102,7 @@ omero:
       CAs: server.pem
       CertFile: server.p12
       Ciphers: HIGH
-      DefaultDir: "${omero.data.dir}/certs"
+      DefaultDir: "/OMERO/certs"
       Password: 30263c05-3101-4a4e-8008-a1a46171959e
       ProtocolVersionMax: TLS1_2
       Protocols: TLS1_0,TLS1_1,TLS1_2
@@ -160,7 +176,8 @@ omero:
   # @param omero.db.statistics Whether JMX statistics are collected for DB usage
   # @param omero.db.user The username to use to connect to the database server
   # @param omero.db.version Version of the database which is in use
-  #db:
+  db:
+    poolsize: 100
   #  authority: export.openmicroscopy.org
   #  dialect: ome.util.PostgresqlDialect
   #  driver: org.postgresql.Driver
@@ -168,7 +185,6 @@ omero:
   #  name: omero
   #  pass: omero
   #  patch: 0
-  #  poolsize: 10
   #  port: 5432
   #  prepared_statement_cache_size: 10
   #  profile: psql
