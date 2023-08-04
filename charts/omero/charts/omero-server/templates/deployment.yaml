@@ -28,6 +28,7 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
+          args: ["omero","admin","start","--foreground","etc/grid/default.xml","debug"]
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -60,6 +61,22 @@ spec:
               name: {{ include "omero-server.fullname" . }}-config
               readOnly: true
               subPath: 00kubernetes-configmap.omero
+        - name: {{ .Chart.Name }}-logs
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: busybox
+          command: ["sh","-c"]
+          args:
+            - |
+              until [ -f $MASTER_OUT ]; do sleep 2; done
+              tail -f $MASTER_OUT
+              unitl [ -f $MASTER_ERR ]; do sleep 2; done
+              >&2 tail -f $MASTER_ERR
+          env:
+            - {name: MASTER_OUT, value: /opt/omero/server/OMERO.server/var/log/master.out}
+            - {name: MASTER_ERR, value: /opt/omero/server/OMERO.server/var/log/master.err}
+          volumeMounts:
+            {{- include "omero-server.volumeMounts" . |nindent 12 }}
       initContainers:
         - name: init-pg-isready
           image: postgres

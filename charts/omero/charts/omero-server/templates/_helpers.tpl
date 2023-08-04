@@ -92,10 +92,12 @@ Create OMERO default root password
 - {name: OMERO_TMPDIR, value: {{ .Values.omeroTmpDir |quote }}}
 - {name: _JAVA_OPTIONS, value: "-Djava.io.tmpdir={{ .Values.omeroTmpDir }}"}
 {{- end }}
+
 {{- define "omero-server.volumeMounts" -}}
 - mountPath: {{ .Values.omeroTmpDir |quote }}
   name: omero-temp-dir
 {{- end }}
+
 {{- define "omero-server.volumes" -}}
 - {name: omero-temp-dir, emptyDir: {}}
 {{- end }}

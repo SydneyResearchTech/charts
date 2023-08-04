@@ -9,19 +9,19 @@ metadata:
     {{- include "omero-server.labels" . | nindent 4 }}
 spec:
   accessModes:
-    - {{ .Values.omero.data.accessMode }}
+    - {{ .Values.omeroData.accessMode }}
   volumeMode: Filesystem
   resources:
     requests:
-      storage: {{ .Values.omero.data.size }}
-{{- if or .Values.omero.data.storageClass .Values.global.storageClass -}}
-{{- $storageClass := (.Values.omero.data.storageClass |default .Values.global.storageClass) -}}
+      storage: {{ .Values.omeroData.size }}
+{{- if or .Values.omeroData.storageClass .Values.global.storageClass -}}
+{{- $storageClass := (.Values.omeroData.storageClass |default .Values.global.storageClass) -}}
 {{- if eq "-" $storageClass -}}
 {{- printf "storageClassName: \"\"" |nindent 2 }}
 {{- else -}}
 {{- printf "storageClassName: %s" $storageClass |nindent 2 }}
 {{- end -}}
 {{- end }}
-{{- if .Values.omero.data.selector -}}
+{{- if .Values.omeroData.selector -}}
 {{ toYaml .Values.omero.data.selector |nindent 2 }}
 {{- end }}

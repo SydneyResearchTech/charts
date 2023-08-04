@@ -86,14 +86,14 @@ omero:
       CAs: server.pem
       CertFile: server.p12
       Ciphers: HIGH
-      DefaultDir: ""
+      DefaultDir: "${omero.data.dir}/certs"
       Password: 30263c05-3101-4a4e-8008-a1a46171959e
       ProtocolVersionMax: TLS1_2
       Protocols: TLS1_0,TLS1_1,TLS1_2
-      VerifyPeer: 0
+      #VerifyPeer: 0
   # @param omero.managed.dir 
-  managed:
-    dir: "${omero.data.dir}/ManagedRepository"
+  #managed:
+  #  dir: "${omero.data.dir}/ManagedRepository"
   # https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/config.html#client
   # @param omero.client.browser.thumb_default_size The default thumbnail size
   # @param omero.client.download_as.max_size Clients disable download as jpg/png/tiff above max pixel count
@@ -113,37 +113,37 @@ omero:
   # @param omero.client.viewer.interpolate_pixels Client viewers interpolate pixels by default
   # @param omero.client.viewer.roi_limit Client viewers roi limit
   # @param omero.client.web.host Absolute omeroweb host http(s)://your_domain/prefix/
-  client:
-    browser:
-      thumb_default_size: 96
-    download_as:
-      max_size: 144000000
-    icetransports: "ssl,tcp"
-    scripts_to_ignore: "/omero/figure_scripts/Movie_Figure.py,/omero/figure_scripts/Split_View_Figure.py,/omero/figure_scripts/Thumbnail_Figure.py,/omero/figure_scripts/ROI_Split_Figure.py,/omero/export_scripts/Make_Movie.py,/omero/import_scripts/Populate_ROI.py"
-    ui:
-      menu:
-        dropdown:
-          colleagues:
-            enabled: true
-            label: "Members"
-          everyone:
-            enabled: true
-            label: "All Members"
-          leaders:
-            enabled: true
-            label: "Owners"
-      tree:
-        orphans:
-          description: "This is a virtual container with orphaned images. These images are not linked anywhere. Just drag them to the selected container."
-          enabled: true
-          name: "Orphaned Images"
-          type_order: "tagset,tag,project,dataset,screen,plate,acquisition,image"
-    viewer:
-      initial_zoom_level: 0
-      interpolate_pixels: true
-      roi_limit: 2000
-    web:
-      host: ""
+  #client:
+  #  browser:
+  #    thumb_default_size: 96
+  #  download_as:
+  #    max_size: 144000000
+  #  icetransports: "ssl,tcp"
+  #  scripts_to_ignore: "/omero/figure_scripts/Movie_Figure.py,/omero/figure_scripts/Split_View_Figure.py,/omero/figure_scripts/Thumbnail_Figure.py,/omero/figure_scripts/ROI_Split_Figure.py,/omero/export_scripts/Make_Movie.py,/omero/import_scripts/Populate_ROI.py"
+  #  ui:
+  #    menu:
+  #      dropdown:
+  #        colleagues:
+  #          enabled: true
+  #          label: "Members"
+  #        everyone:
+  #          enabled: true
+  #          label: "All Members"
+  #        leaders:
+  #          enabled: true
+  #          label: "Owners"
+  #    tree:
+  #      orphans:
+  #        description: "This is a virtual container with orphaned images. These images are not linked anywhere. Just drag them to the selected container."
+  #        enabled: true
+  #        name: "Orphaned Images"
+  #        type_order: "tagset,tag,project,dataset,screen,plate,acquisition,image"
+  #  viewer:
+  #    initial_zoom_level: 0
+  #    interpolate_pixels: true
+  #    roi_limit: 2000
+  #  web:
+  #    host: ""
   # https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/config.html#database
   # @param omero.db.authority The string that will be used as the base for LSIDs in all exported OME objects including OME-XML and OME-TIFF
   # @param omero.db.dialect Implementation of the org.hibernate.dialect.Dialect interface which will be used to convert HQL queries and save operations into SQL SELECTs and DML statements
@@ -160,22 +160,22 @@ omero:
   # @param omero.db.statistics Whether JMX statistics are collected for DB usage
   # @param omero.db.user The username to use to connect to the database server
   # @param omero.db.version Version of the database which is in use
-  db:
-    authority: export.openmicroscopy.org
-    dialect: ome.util.PostgresqlDialect
-    driver: org.postgresql.Driver
-    host: localhost
-    name: omero
-    pass: omero
-    patch: 0
-    poolsize: 10
-    port: 5432
-    prepared_statement_cache_size: 10
-    profile: psql
-    sql_action_class: ome.util.actions.PostgresSqlAction
-    statistics: true
-    user: omero
-    version: OMERO5.4
+  #db:
+  #  authority: export.openmicroscopy.org
+  #  dialect: ome.util.PostgresqlDialect
+  #  driver: org.postgresql.Driver
+  #  host: localhost
+  #  name: omero
+  #  pass: omero
+  #  patch: 0
+  #  poolsize: 10
+  #  port: 5432
+  #  prepared_statement_cache_size: 10
+  #  profile: psql
+  #  sql_action_class: ome.util.actions.PostgresSqlAction
+  #  statistics: true
+  #  user: omero
+  #  version: OMERO5.4
 
 replicaCount: 1
 
