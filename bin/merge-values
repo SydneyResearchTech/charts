@@ -21,7 +21,10 @@ def getValues(subchart):
             if line.startswith('global:'):
                 isGlobal = True
                 continue
-            valuesYaml += "  "+line
+            if len(line.strip()) == 0:
+                valuesYaml += line
+            else:
+                valuesYaml += "  "+line
     return valuesYaml
 
 def main():

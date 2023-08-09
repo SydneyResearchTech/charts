@@ -38,15 +38,15 @@ global:
 
 omero-server:
   enabled: true
-  
+
   omeroDescriptor: "etc/grid/default.xml"
   omeroTargets: "jmx"      # debug|trace
-  
+
   omeroPrefix: ""
   omeroTmpDir: "/opt/omero/server/omero/tmp"
   omeroDir: "/opt/omero/server/OMERO.server"
   omeroLoadDir: "/omero-config.d"
-  
+
   omeroData:
     accessMode: ReadWriteMany
     size: 1Gi
@@ -54,11 +54,11 @@ omero-server:
     storageClass: ""
   omeroJmx:
     enabled: false
-  
+
   omeroRootPass: ""
-  
+
   omeroGlacier2IceSSLExistingSecretName: ""
-  
+
   # WORKAROUND: omero server log side containers
   omeroLogFiles:
     blitz-0: /opt/omero/server/OMERO.server/var/log/Blitz-0.log
@@ -71,7 +71,7 @@ omero-server:
     tables-0: /opt/omero/server/OMERO.server/var/log/Tables-0.log
     master-err: /opt/omero/server/OMERO.server/var/log/master.err
     master-out: /opt/omero/server/OMERO.server/var/log/master.out
-  
+
   ## @section Config parameters (https://docs.openmicroscopy.org/omero/5.6.3/sysadmins/config.html)
   omero:
     # Binary repository
@@ -197,19 +197,19 @@ omero-server:
     #   bean: defaultMetrics
     #   graphite: ""
     #   slf4j_minutes: 60
-  
+
   replicaCount: 1
-  
+
   image:
     repository: ghcr.io/sydneyresearchtech/openmicroscopy-omero-server
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
-  
+
   imagePullSecrets: []
   nameOverride: ""
   fullnameOverride: ""
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: true
@@ -218,14 +218,14 @@ omero-server:
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
-  
+
   podAnnotations: {}
     # prometheus.io/scrape: 'true'
     # prometheus.io/port: '3001'
-  
+
   podSecurityContext:
     fsGroup: 1000
-  
+
   securityContext:
     # capabilities:
     #   drop:
@@ -234,11 +234,11 @@ omero-server:
     runAsNonRoot: true
     runAsUser: 1000
     runAsGroup: 1000
-  
+
   service:
     type: ClusterIP
     port: 4063
-  
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -250,27 +250,27 @@ omero-server:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
-  
+
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  
+
   nodeSelector: {}
-  
+
   tolerations: []
-  
+
   affinity: {}
 
 omero-web:
   enabled: true
-  
+
   omeroTmpDir: "/opt/omero/server/omero/tmp"
   omeroDir: "/opt/omero/web/OMERO.web"
   omeroLoadDir: "/omero-config.d"
-  
+
   # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#web-configuration
   # @param omero.web.admins A list of people who get code error notifications whenever the application identifies a broken link or raises an unhandled exception that results in an internal server error
   # @param omero.web.application_server OMERO.web is configured to run in Gunicorn as a generic WSGI (TCP)application by default
@@ -498,19 +498,19 @@ omero-web:
       wsgi_timeout: 60
       wsgi_workers: 5
       x_frame_options: SAMEORIGIN
-  
+
   replicaCount: 1
-  
+
   image:
     repository: ghcr.io/sydneyresearchtech/openmicroscopy-omero-web
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
-  
+
   imagePullSecrets: []
   nameOverride: ""
   fullnameOverride: ""
-  
+
   serviceAccount:
     # Specifies whether a service account should be created
     create: false
@@ -519,12 +519,12 @@ omero-web:
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
-  
+
   podAnnotations: {}
-  
+
   podSecurityContext: {}
     # fsGroup: 2000
-  
+
   securityContext: {}
     # capabilities:
     #   drop:
@@ -532,11 +532,11 @@ omero-web:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
     # runAsUser: 1000
-  
+
   service:
     type: ClusterIP
     port: 4080
-  
+
   services:
     web:
       type: ClusterIP
@@ -544,7 +544,7 @@ omero-web:
     static:
       type: ClusterIP
       port: 8080
-  
+
   ingress:
     enabled: false
     className: ""
@@ -572,7 +572,7 @@ omero-web:
     #  - secretName: chart-example-tls
     #    hosts:
     #      - chart-example.local
-  
+
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -584,18 +584,18 @@ omero-web:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
-  
+
   autoscaling:
     enabled: false
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  
+
   nodeSelector: {}
-  
+
   tolerations: []
-  
+
   affinity: {}
 
 ## @section postgresql parameters
