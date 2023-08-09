@@ -89,7 +89,7 @@ omeroLoadDir: "/omero-config.d"
 # @param omero.web.use_x_forwarded_host Specifies whether to use the X-Forwarded-Host header in preference to the Host header
 # @param omero.web.user_dropdown Whether or not to include a user dropdown in the base template
 # @param omero.web.viewer.view Django view which handles display of, or redirection to, the desired full image viewer
-# @param omero.web.webgateway_cache 
+# @param omero.web.webgateway_cache
 # @param omero.web.wsgi_args A string representing Gunicorn additional arguments
 # @param omero.web.wsgi_timeout Workers silent for more than this many seconds are killed and restarted
 # @param omero.web.wsgi_workers The number of worker processes for handling requests
@@ -104,8 +104,8 @@ omero:
       max_requests: 0
       port: "4080"
     apps: []
-    #- omero_oauth
-    #base_include_template: ""
+    #  - omero_oauth
+    #  base_include_template: ""
     caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
     chunk_size: 1048576
     cors_origin_allow_all: false
@@ -131,9 +131,9 @@ omero:
     login_redirect: {}
     login_view: weblogin
     maximum_multifile_download_size: 1073741824
-    #middleware: |
+    # middleware: |
     nginx_server_extra_config: []
-    open_with: [[\”Image viewer\”, \”webgateway\”, {\”supported_objects\”: [\”image\”],\”script_url\”: \”webclient/javascript/ome.openwith_viewer.js\”}]]
+    open_with: [[\”Image viewer\”, \”webgateway\”, {\”supported_objects\”: [\”image\”], \”script_url\”: \”webclient/javascript/ome.openwith_viewer.js\”}]]
     # https://gitlab.com/openmicroscopy/incubator/omero-oauth
     oauth:
       display:
@@ -148,37 +148,37 @@ omero:
       group:
         name:
         templatetime: false
-        perms: 
+        perms:
       sessiontoken:
         enabled: false
       providers: []
-      #- name: google
-      #  displayname: Google
-      #  url:
-      #    authorisation: https://accounts.google.com/o/oauth2/v2/auth
-      #    token:  https://oauth2.googleapis.com/token
-      #    userinfo: https://openidconnect.googleapis.com/v1/userinfo
-      #    callback: https://OMERO.WEB.HOST/oauth/callback/google
-      #  client:
-      #    id: CLIENT_ID
-      #    secret: SECRET_ID
-      #    scopes:
-      #    - openid
-      #    - https://www.googleapis.com/auth/userinfo.email
-      #    - https://www.googleapis.com/auth/userinfo.profile
-      #  openid:
-      #    issuer: https://accounts.google.com
-      #    verify: true
-      #  authorization:
-      #    params:
-      #      prompt: select_account
-      #  userinfo:
-      #    type: openid
-      #  user:
-      #    name: 'google-{sub}'
-      #    email: '{email}'
-      #    firstname: '{given_name}'
-      #    lastname: '{family_name}'
+      # - name: google
+      #   displayname: Google
+      #   url:
+      #     authorisation: https://accounts.google.com/o/oauth2/v2/auth
+      #     token:  https://oauth2.googleapis.com/token
+      #     userinfo: https://openidconnect.googleapis.com/v1/userinfo
+      #     callback: https://OMERO.WEB.HOST/oauth/callback/google
+      #   client:
+      #     id: CLIENT_ID
+      #     secret: SECRET_ID
+      #     scopes:
+      #     - openid
+      #     - https://www.googleapis.com/auth/userinfo.email
+      #     - https://www.googleapis.com/auth/userinfo.profile
+      #   openid:
+      #     issuer: https://accounts.google.com
+      #     verify: true
+      #   authorization:
+      #     params:
+      #       prompt: select_account
+      #   userinfo:
+      #     type: openid
+      #   user:
+      #     name: 'google-{sub}'
+      #     email: '{email}'
+      #     firstname: '{given_name}'
+      #     lastname: '{family_name}'
     page_size: 200
     ping_interval: 60000
     pipeline_css_compressor: ""
@@ -222,9 +222,9 @@ omero:
     top_logo_link: ""
     ui:
       center_plugins: []
-      #metadata_panes:
-      #right_plugins:
-      #top_links:
+      # metadata_panes:
+      # right_plugins:
+      # top_links:
     use_x_forwarded_host: false
     user_dropdown: true
     viewer:

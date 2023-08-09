@@ -1,0 +1,4 @@
+omero-web:
+  omero:
+    web:
+      secret_key: "dummy_value"

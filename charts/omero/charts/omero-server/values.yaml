@@ -44,7 +44,7 @@ global:
   storageClass: ""
 
 omeroDescriptor: "etc/grid/default.xml"
-omeroTargets: ""      # debug|trace
+omeroTargets: "jmx"      # debug|trace
 
 omeroPrefix: ""
 omeroTmpDir: "/opt/omero/server/omero/tmp"
@@ -54,31 +54,33 @@ omeroLoadDir: "/omero-config.d"
 omeroData:
   accessMode: ReadWriteMany
   size: 1Gi
-  selector: {} # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
+  selector: {}  # https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
   storageClass: ""
+omeroJmx:
+  enabled: false
 
 omeroRootPass: ""
 
 omeroGlacier2IceSSLExistingSecretName: ""
 
-# WORKAROUND: Present omero server logs
+# WORKAROUND: omero server log side containers
 omeroLogFiles:
-- /opt/omero/server/OMERO.server/var/log/Blitz-0.log
-- /opt/omero/server/OMERO.server/var/log/DropBox.log
-- /opt/omero/server/OMERO.server/var/log/FileServer.log
-- /opt/omero/server/OMERO.server/var/log/Indexer-0.log
-- /opt/omero/server/OMERO.server/var/log/MonitorServer.log
-- /opt/omero/server/OMERO.server/var/log/PixelData-0.log
-- /opt/omero/server/OMERO.server/var/log/Processor-0.log
-- /opt/omero/server/OMERO.server/var/log/Tables-0.log
-- /opt/omero/server/OMERO.server/var/log/master.err
-- /opt/omero/server/OMERO.server/var/log/master.out
+  blitz-0: /opt/omero/server/OMERO.server/var/log/Blitz-0.log
+  dropbox: /opt/omero/server/OMERO.server/var/log/DropBox.log
+  file-server: /opt/omero/server/OMERO.server/var/log/FileServer.log
+  indexer-0: /opt/omero/server/OMERO.server/var/log/Indexer-0.log
+  monitor-server: /opt/omero/server/OMERO.server/var/log/MonitorServer.log
+  pixel-data-0: /opt/omero/server/OMERO.server/var/log/PixelData-0.log
+  processor-0: /opt/omero/server/OMERO.server/var/log/Processor-0.log
+  tables-0: /opt/omero/server/OMERO.server/var/log/Tables-0.log
+  master-err: /opt/omero/server/OMERO.server/var/log/master.err
+  master-out: /opt/omero/server/OMERO.server/var/log/master.out
 
 ## @section Config parameters (https://docs.openmicroscopy.org/omero/5.6.3/sysadmins/config.html)
 omero:
   # Binary repository
   # @param omero.checksum.supported Checksum algorithms supported by the server for new file uploads
-  # @param omero.data.dir 
+  # @param omero.data.dir
   checksum:
     supported: "SHA1-160,MD5-128,Murmur3-128,Murmur3-32,CRC-32,Adler-32,File-Size-64"
   data:
@@ -87,7 +89,7 @@ omero:
   # @param omero.fs.repo.path_rules Rules to apply to judge the acceptability of FS paths for writing into omero.managed.dir
   fs:
     repo:
-      path: "%user%_%userId%//%year%-%month%/%day%/%time%" #https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/fs-upload-configuration.html
+      path: "%user%_%userId%//%year%-%month%/%day%/%time%"  # https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/fs-upload-configuration.html
       path_rules: "Windows required,UNIX required"
   # https://doc.zeroc.com/ice/3.6/property-reference/icessl
   # @param omero.glacier2.IceSSL.CAs Specifies the path name of a file containing the certificates of trusted certificate authorities (CAs). The file must be encoded using the PEM format and can contain multiple certificates.
@@ -106,10 +108,10 @@ omero:
       Password: 30263c05-3101-4a4e-8008-a1a46171959e
       ProtocolVersionMax: TLS1_2
       Protocols: TLS1_0,TLS1_1,TLS1_2
-      #VerifyPeer: 0
-  # @param omero.managed.dir 
-  #managed:
-  #  dir: "${omero.data.dir}/ManagedRepository"
+      # VerifyPeer: 0
+  # @param omero.managed.dir
+  # managed:
+  #   dir: "${omero.data.dir}/ManagedRepository"
   # https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/config.html#client
   # @param omero.client.browser.thumb_default_size The default thumbnail size
   # @param omero.client.download_as.max_size Clients disable download as jpg/png/tiff above max pixel count
@@ -129,37 +131,37 @@ omero:
   # @param omero.client.viewer.interpolate_pixels Client viewers interpolate pixels by default
   # @param omero.client.viewer.roi_limit Client viewers roi limit
   # @param omero.client.web.host Absolute omeroweb host http(s)://your_domain/prefix/
-  #client:
-  #  browser:
-  #    thumb_default_size: 96
-  #  download_as:
-  #    max_size: 144000000
-  #  icetransports: "ssl,tcp"
-  #  scripts_to_ignore: "/omero/figure_scripts/Movie_Figure.py,/omero/figure_scripts/Split_View_Figure.py,/omero/figure_scripts/Thumbnail_Figure.py,/omero/figure_scripts/ROI_Split_Figure.py,/omero/export_scripts/Make_Movie.py,/omero/import_scripts/Populate_ROI.py"
-  #  ui:
-  #    menu:
-  #      dropdown:
-  #        colleagues:
-  #          enabled: true
-  #          label: "Members"
-  #        everyone:
-  #          enabled: true
-  #          label: "All Members"
-  #        leaders:
-  #          enabled: true
-  #          label: "Owners"
-  #    tree:
-  #      orphans:
-  #        description: "This is a virtual container with orphaned images. These images are not linked anywhere. Just drag them to the selected container."
-  #        enabled: true
-  #        name: "Orphaned Images"
-  #        type_order: "tagset,tag,project,dataset,screen,plate,acquisition,image"
-  #  viewer:
-  #    initial_zoom_level: 0
-  #    interpolate_pixels: true
-  #    roi_limit: 2000
-  #  web:
-  #    host: ""
+  # client:
+  #   browser:
+  #     thumb_default_size: 96
+  #   download_as:
+  #     max_size: 144000000
+  #   icetransports: "ssl,tcp"
+  #   scripts_to_ignore: "/omero/figure_scripts/Movie_Figure.py,/omero/figure_scripts/Split_View_Figure.py,/omero/figure_scripts/Thumbnail_Figure.py,/omero/figure_scripts/ROI_Split_Figure.py,/omero/export_scripts/Make_Movie.py,/omero/import_scripts/Populate_ROI.py"
+  #   ui:
+  #     menu:
+  #       dropdown:
+  #         colleagues:
+  #           enabled: true
+  #           label: "Members"
+  #         everyone:
+  #           enabled: true
+  #           label: "All Members"
+  #         leaders:
+  #           enabled: true
+  #           label: "Owners"
+  #     tree:
+  #       orphans:
+  #         description: "This is a virtual container with orphaned images. These images are not linked anywhere. Just drag them to the selected container."
+  #         enabled: true
+  #         name: "Orphaned Images"
+  #         type_order: "tagset,tag,project,dataset,screen,plate,acquisition,image"
+  #   viewer:
+  #     initial_zoom_level: 0
+  #     interpolate_pixels: true
+  #     roi_limit: 2000
+  #   web:
+  #     host: ""
   # https://docs.openmicroscopy.org/omero/5.6.1/sysadmins/config.html#database
   # @param omero.db.authority The string that will be used as the base for LSIDs in all exported OME objects including OME-XML and OME-TIFF
   # @param omero.db.dialect Implementation of the org.hibernate.dialect.Dialect interface which will be used to convert HQL queries and save operations into SQL SELECTs and DML statements
@@ -170,7 +172,7 @@ omero:
   # @param omero.db.patch The patch version of the database which is in use
   # @param omero.db.poolsize Sets the number of database server connections which will be used by OMERO
   # @param omero.db.port TCP port on which the database server is listening for connections
-  # @param omero.db.prepared_statement_cache_size 
+  # @param omero.db.prepared_statement_cache_size
   # @param omero.db.profile Default values for the current profile will be hard-coded into the hibernate.properties file in the model-*.jar
   # @param omero.db.sql_action_class Implementation of the ome.util.SqlAction interface which will be used to perform all direct SQL actions
   # @param omero.db.statistics Whether JMX statistics are collected for DB usage
@@ -192,6 +194,13 @@ omero:
   #  statistics: true
   #  user: omero
   #  version: OMERO5.4
+  # @param omero.metrics.bean Which bean to use: nullMetrics does nothing defaultMetrics
+  # @param omero.metrics.graphite Address for Metrics to send server data
+  # @param omero.metrics.slf4j_minutes Number of minutes to periodically print to slf4j 0 or lower disables the printout
+  # metrics:
+  #   bean: defaultMetrics
+  #   graphite: ""
+  #   slf4j_minutes: 60
 
 replicaCount: 1
 
@@ -215,6 +224,8 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
+  # prometheus.io/scrape: 'true'
+  # prometheus.io/port: '3001'
 
 podSecurityContext:
   fsGroup: 1000

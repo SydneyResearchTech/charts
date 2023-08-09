@@ -45,3 +45,4 @@ fi
 exec git diff-index --check --cached $against --
 
 which helm &>/dev/null && helm lint .
+which ct &>/dev/null && ct lint --all

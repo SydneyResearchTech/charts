@@ -39,6 +39,9 @@ spec:
             - name: ROOTPASS
               value: {{ include "omero-server.defaultRootPassword" . }}
           ports:
+            #- name: jmx
+            #  containerPort: 3001
+            #  protocol: TCP
             - name: ice-router
               containerPort: 4063
               protocol: TCP
@@ -68,8 +71,8 @@ spec:
               name: {{ include "omero-server.fullname" . }}-config
               readOnly: true
               subPath: 00kubernetes-configmap.omero
-      {{- range $i,$v := .Values.omeroLogFiles }}
-        - name: logs-{{ $i }}
+      {{- range $n,$p := .Values.omeroLogFiles }}
+        - name: {{ $n }}-log
           image: busybox
           securityContext:
             {{- toYaml $.Values.securityContext | nindent 12 }}
@@ -77,9 +80,9 @@ spec:
           args:
             - |
               until [ -f "${LOG_FILE}" ]; do sleep 2; done
-              tail -f "${LOG_FILE}"
+              exec tail -f "${LOG_FILE}"
           env:
-            - {name: LOG_FILE, value: {{ $v }}}
+            - {name: LOG_FILE, value: {{ $p }}}
           volumeMounts:
             - mountPath: /opt/omero/server/OMERO.server/var/log
               name: logs
