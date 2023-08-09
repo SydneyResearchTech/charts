@@ -1,0 +1,72 @@
+#!/usr/bin/env python3
+import os
+import re
+import yaml
+import sys
+
+def getValues(subchart):
+    valuesYaml = ""
+    isHeader = True
+    isGlobal = False
+    with open(subchart) as f:
+        for line in f:
+            if line.startswith('#') and isHeader:
+                continue
+            else:
+                isHeader = False
+            if isGlobal and line.startswith('  '):
+                continue
+            else:
+                isGlobal = False
+            if line.startswith('global:'):
+                isGlobal = True
+                continue
+            valuesYaml += "  "+line
+    return valuesYaml
+
+def main():
+    valuesYaml = ""
+    isSubchart = False
+    chartValues = {}
+    currSubchart = ""
+
+    with open("Chart.yaml") as f:
+        chart = yaml.safe_load(f)
+    for d in chart['dependencies']:
+        _values = "charts/{}/values.yaml".format(d['name'])
+        if os.path.isfile(_values):
+            chartValues[d['name']] = getValues(_values)
+
+    subcharts = sorted(list(chartValues.keys()))
+
+    with open("values.yaml") as f:
+        for line in f:
+            subchart = [e for e in subcharts if line.startswith("{}:".format(e))]
+            if subchart:
+                currSubchart = subchart[0]
+                valuesYaml += "{}:".format(currSubchart) +os.linesep
+                isSubchart = True
+                continue
+
+            if isSubchart:
+                if line.startswith('  enabled:'):
+                    valuesYaml += line
+                if line.startswith('  '):
+                    continue
+
+                valuesYaml += chartValues[currSubchart]
+                subcharts.remove(currSubchart)
+                isSubchart = False
+
+            valuesYaml += line
+
+        for _subchart in subcharts:
+            valuesYaml += "{}:".format(_subchart) +os.linesep
+            valuesYaml += chartValues[_subchart]
+
+    with open("values.yaml", 'w') as f:
+        f.write(valuesYaml)
+    #sys.stdout.write(valuesYaml)
+
+if __name__ == '__main__':
+    main()

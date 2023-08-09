@@ -235,8 +235,6 @@ omero:
     wsgi_workers: 5
     x_frame_options: SAMEORIGIN
 
-enabled: true
-
 replicaCount: 1
 
 image:
