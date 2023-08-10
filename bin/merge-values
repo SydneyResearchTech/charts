@@ -6,32 +6,33 @@ import sys
 
 def getValues(subchart):
     valuesYaml = ""
-    isHeader = True
-    isGlobal = False
+    header = ""
+    isRootElement = re.compile('[a-zA-Z0-9-_]+:')
+
     with open(subchart) as f:
         for line in f:
-            if line.startswith('#') and isHeader:
-                continue
-            else:
-                isHeader = False
-            if isGlobal and line.startswith('  '):
-                continue
-            else:
-                isGlobal = False
-            if line.startswith('global:'):
-                isGlobal = True
-                continue
-            if len(line.strip()) == 0:
-                valuesYaml += line
-            else:
-                valuesYaml += "  "+line
+            if valuesYaml:
+                if len(line.strip()) == 0:
+                    valuesYaml += line
+                else:
+                    valuesYaml += "  "+line
+
+            elif isRootElement.match(line):
+                if line.startswith('global:'):
+                    header = ""
+                else:
+                    valuesYaml += header+"  "+line
+
+            elif line.startswith('##'):
+                header += "  "+line
+
     return valuesYaml
 
 def main():
     valuesYaml = ""
-    isSubchart = False
     chartValues = {}
-    currSubchart = ""
+    subchart = ""
+    header = ""
 
     with open("Chart.yaml") as f:
         chart = yaml.safe_load(f)
@@ -42,30 +43,37 @@ def main():
 
     subcharts = sorted(list(chartValues.keys()))
 
+    isRootElement = re.compile('[a-zA-Z0-9-_]+:')
+
     with open("values.yaml") as f:
         for line in f:
-            subchart = [e for e in subcharts if line.startswith("{}:".format(e))]
-            if subchart:
-                currSubchart = subchart[0]
-                valuesYaml += "{}:".format(currSubchart) +os.linesep
-                isSubchart = True
-                continue
+            if isRootElement.match(line):
+                if subchart:
+                    valuesYaml += chartValues[subchart] +os.linesep
+                    subcharts.remove(subchart)
+                    subchart = ""
 
-            if isSubchart:
-                if line.startswith('  enabled:'):
+                _subchart = [e for e in subcharts if line.startswith("{}:".format(e))]
+                if _subchart:
+                    subchart = _subchart[0]
+
+                valuesYaml += header + line
+                header = ""
+
+            else:
+                if subchart:
+                    if line.startswith('  enabled:'):
+                        valuesYaml += line
+                    elif line.startswith('#'):
+                        header += line
+                else:
                     valuesYaml += line
-                if line.startswith('  '):
-                    continue
+    if subchart:
+        valuesYaml += chartValues[subchart] +os.linesep
 
-                valuesYaml += chartValues[currSubchart]
-                subcharts.remove(currSubchart)
-                isSubchart = False
-
-            valuesYaml += line
-
-        for _subchart in subcharts:
-            valuesYaml += "{}:".format(_subchart) +os.linesep
-            valuesYaml += chartValues[_subchart]
+    for _subchart in subcharts:
+        valuesYaml += "{}:".format(_subchart) +os.linesep
+        valuesYaml += chartValues[_subchart]
 
     with open("values.yaml", 'w') as f:
         f.write(valuesYaml)

@@ -7,6 +7,11 @@ omeroTmpDir: "/opt/omero/server/omero/tmp"
 omeroDir: "/opt/omero/web/OMERO.web"
 omeroLoadDir: "/omero-config.d"
 
+omeroWeb:
+  viewer:
+    iviewer:
+      enabled: true
+
 # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#web-configuration
 # @param omero.web.admins A list of people who get code error notifications whenever the application identifies a broken link or raises an unhandled exception that results in an internal server error
 # @param omero.web.application_server OMERO.web is configured to run in Gunicorn as a generic WSGI (TCP)application by default
@@ -103,7 +108,7 @@ omero:
       host: "127.0.0.1"
       max_requests: 0
       port: "4080"
-    apps: []
+    apps: "omero_iviewer"
     #  - omero_oauth
     #  base_include_template: ""
     caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
@@ -133,7 +138,8 @@ omero:
     maximum_multifile_download_size: 1073741824
     # middleware: |
     nginx_server_extra_config: []
-    open_with: [[\”Image viewer\”, \”webgateway\”, {\”supported_objects\”: [\”image\”], \”script_url\”: \”webclient/javascript/ome.openwith_viewer.js\”}]]
+    open_with: ["omero_iviewer", "omero_iviewer_index", {"supported_objects":["images", "dataset", "well"], "script_url": "omero_iviewer/openwith.js", "label": "OMERO.iviewer"}]
+    # open_with: [[\”Image viewer\”, \”webgateway\”, {\”supported_objects\”: [\”image\”], \”script_url\”: \”webclient/javascript/ome.openwith_viewer.js\”}]]
     # https://gitlab.com/openmicroscopy/incubator/omero-oauth
     oauth:
       display:
@@ -228,7 +234,8 @@ omero:
     use_x_forwarded_host: false
     user_dropdown: true
     viewer:
-      view: omeroweb.webclient.views.image_viewer
+      view: omero_iviewer.views.index
+      # view: omeroweb.webclient.views.image_viewer
     webgateway_cache: None
     wsgi_args: "--access-logfile - --error-logfile - --loglevel debug"
     wsgi_timeout: 60
