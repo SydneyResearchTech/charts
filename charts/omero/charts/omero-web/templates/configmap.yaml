@@ -9,16 +9,51 @@ metadata:
     {{- include "omero-web.labels" . | nindent 4 }}
 data:
   00kubernetes-configmap.omero: |
-{{- with .Values.omero }}
-{{- with .web }}
-{{- with .application_server }}
-    omero.web.application_server.host={{.host}}
-    omero.web.application_server.port={{.port}}
-{{- end }}
-    omero.web.check_version=false
-    omero.web.debug={{.debug}}
-    omero.web.secure={{.secure}}
-    omero.web.server_list=[["omero-omero-server", 4064, "omero"]]
-    omero.web.static_url={{.static_url}}
-{{- end }}
-{{- end }}
+    {{- include "omero.config" (dict "omero" .Values.omero "omero_cfg" list) | nindent 4 }}
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "omero-web.fullname" . }}-nginx
+  labels:
+    {{- include "omero-web.labels" . | nindent 4 }}
+data:
+  nginx.conf: |
+    pid /var/run/nginx.pid;
+
+    events {
+      worker_connections  1024;
+    }
+
+    http {
+      include       /etc/nginx/mime.types;
+      default_type  application/octet-stream;
+
+      log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+      access_log  /dev/stdout main;
+      error_log   /dev/stderr warn;
+
+      sendfile on;
+      keepalive_timeout 65;
+
+      server {
+        listen      8080;
+        listen      [::]:8080;
+        server_name localhost;
+
+        location / {
+          root   /usr/share/nginx/html;
+          index  index.html index.htm;
+          autoindex off;
+        }
+
+        error_page   500 502 503 504  /50x.html;
+        location = /50x.html {
+          root   /usr/share/nginx/html;
+        }
+      }
+    }

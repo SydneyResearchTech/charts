@@ -365,14 +365,14 @@ omero-web:
   # @param omero.web.x_frame_options Whether to allow OMERO.web to be loaded in a frame
   omero:
     web:
-      admins: '[["Dean Taylor","dean.taylor@sydney.edu.au"]]'
+      admins: []
       application_server:
         # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#omero-web-application-server
         type: "wsgi-tcp"
         host: "127.0.0.1"
         max_requests: 0
         port: "4080"
-      apps: "omero_iviewer"
+      apps: []
       #  - omero_oauth
       #  base_include_template: ""
       caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
@@ -391,7 +391,7 @@ omero-web:
           enabled: true
       html_meta_referrer: origin-when-crossorigin
       index_template: ""
-      logdir: /home/omero/OMERO.server/var/log
+      logdir: /opt/omero/web/OMERO.web/var/log
       login:
         client_downloads_base: ome/omero-insight
         show_client_downloads: true
@@ -402,53 +402,52 @@ omero-web:
       maximum_multifile_download_size: 1073741824
       # middleware: |
       nginx_server_extra_config: []
-      open_with: ["omero_iviewer", "omero_iviewer_index", {"supported_objects":["images", "dataset", "well"], "script_url": "omero_iviewer/openwith.js", "label": "OMERO.iviewer"}]
-      # open_with: [[\”Image viewer\”, \”webgateway\”, {\”supported_objects\”: [\”image\”], \”script_url\”: \”webclient/javascript/ome.openwith_viewer.js\”}]]
+      open_with: [[”Image viewer”, ”webgateway”, {”supported_objects”: [”image”], ”script_url”: ”webclient/javascript/ome.openwith_viewer.js”}]]
       # https://gitlab.com/openmicroscopy/incubator/omero-oauth
-      oauth:
-        display:
-          name: OAuth Client
-        host:
-        port: 4064
-        admin:
-          user:
-          password:
-        user:
-          timeout: 86400
-        group:
-          name:
-          templatetime: false
-          perms:
-        sessiontoken:
-          enabled: false
-        providers: []
-        # - name: google
-        #   displayname: Google
-        #   url:
-        #     authorisation: https://accounts.google.com/o/oauth2/v2/auth
-        #     token:  https://oauth2.googleapis.com/token
-        #     userinfo: https://openidconnect.googleapis.com/v1/userinfo
-        #     callback: https://OMERO.WEB.HOST/oauth/callback/google
-        #   client:
-        #     id: CLIENT_ID
-        #     secret: SECRET_ID
-        #     scopes:
-        #     - openid
-        #     - https://www.googleapis.com/auth/userinfo.email
-        #     - https://www.googleapis.com/auth/userinfo.profile
-        #   openid:
-        #     issuer: https://accounts.google.com
-        #     verify: true
-        #   authorization:
-        #     params:
-        #       prompt: select_account
-        #   userinfo:
-        #     type: openid
-        #   user:
-        #     name: 'google-{sub}'
-        #     email: '{email}'
-        #     firstname: '{given_name}'
-        #     lastname: '{family_name}'
+      # oauth:
+      #   display:
+      #     name: OAuth Client
+      #   host:
+      #   port: 4064
+      #   admin:
+      #     user:
+      #     password:
+      #   user:
+      #     timeout: 86400
+      #   group:
+      #     name:
+      #     templatetime: false
+      #     perms:
+      #   sessiontoken:
+      #     enabled: false
+      #   providers: []
+      #   - name: google
+      #     displayname: Google
+      #     url:
+      #       authorisation: https://accounts.google.com/o/oauth2/v2/auth
+      #       token:  https://oauth2.googleapis.com/token
+      #       userinfo: https://openidconnect.googleapis.com/v1/userinfo
+      #       callback: https://OMERO.WEB.HOST/oauth/callback/google
+      #     client:
+      #       id: CLIENT_ID
+      #       secret: SECRET_ID
+      #       scopes:
+      #       - openid
+      #       - https://www.googleapis.com/auth/userinfo.email
+      #       - https://www.googleapis.com/auth/userinfo.profile
+      #     openid:
+      #       issuer: https://accounts.google.com
+      #       verify: true
+      #     authorization:
+      #       params:
+      #         prompt: select_account
+      #     userinfo:
+      #       type: openid
+      #     user:
+      #       name: 'google-{sub}'
+      #       email: '{email}'
+      #       firstname: '{given_name}'
+      #       lastname: '{family_name}'
       page_size: 200
       ping_interval: 60000
       pipeline_css_compressor: ""
@@ -472,7 +471,7 @@ omero-web:
       secret_key: ""
       secure: false
       secure_proxy_ssl_header: []
-      server_list: '[["localhost",4064,"omero"]]'
+      server_list: [["localhost", 4064, "omero"]]
       session_cookie_age: 86400
       session_cookie_domain: None
       session_cookie_name: None
@@ -482,7 +481,7 @@ omero-web:
       session_expire_at_browser_close: true
       sharing:
         opengraph: {}     # '{"omero": "@openmicroscopy"}'
-      static_root: "/opt/OMERO.server/var/static"
+      static_root: "/opt/omero/web/OMERO.web/var/static"
       static_url: "/static/"
       staticfile_dirs: []
       template_dirs: []
@@ -495,12 +494,11 @@ omero-web:
         # metadata_panes:
         # right_plugins:
         # top_links:
-      use_x_forwarded_host: false
+      use_x_forwarded_host: true
       user_dropdown: true
       viewer:
-        view: omero_iviewer.views.index
-        # view: omeroweb.webclient.views.image_viewer
-      webgateway_cache: None
+        view: omeroweb.webclient.views.image_viewer
+      # webgateway_cache: None
       wsgi_args: "--access-logfile - --error-logfile - --loglevel debug"
       wsgi_timeout: 60
       wsgi_workers: 5

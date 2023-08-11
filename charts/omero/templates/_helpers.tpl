@@ -2,7 +2,7 @@
 {{- $omero := .omero -}}
 {{- $omero_cfg := .omero_cfg -}}
 {{- if ne (kindOf $omero) "map" }}
-  {{- printf "omero.%s=%s\n" (join "." $omero_cfg) (trimAll "\"" (toJson $omero)) }}
+  {{- printf "omero.%s=%s\n" (join "." $omero_cfg) ((trimAll "\"" (toJson $omero))|replace "\\\"" "\"") }}
 {{- else }}
   {{- range $k, $v := $omero }}
     {{- include "omero.config" (dict "omero" $v "omero_cfg" (append $omero_cfg $k)) }}

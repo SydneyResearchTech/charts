@@ -16,11 +16,9 @@ spec:
       {{- include "omero-web.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
       annotations:
-        {{- if .Values.podAnnotations }}{{ toYaml . | nindent 8 }}{{ end }}
+        {{- if .Values.podAnnotations }}{{ toYaml .Values.podAnnotations | nindent 8 }}{{ end }}
         checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . |sha256sum }}
-      {{- end }}
       labels:
         {{- include "omero-web.selectorLabels" . | nindent 8 }}
     spec:
@@ -44,7 +42,7 @@ spec:
           #livenessProbe:
           #  httpGet:
           #    path: /
-          #    port: http
+          #    port: omero-web
           readinessProbe:
             httpGet:
               path: /
@@ -56,14 +54,13 @@ spec:
               name: omero-config
               readOnly: true
               subPath: 00kubernetes-configmap.omero
-            - mountPath: {{ .Values.omeroDir }}/var/static
+            - mountPath: {{ .Values.omero.web.static_root }}
               name: web-static
         - name: {{ .Chart.Name }}-static
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: nginx
-          env:
-            - {name: NGINX_PORT, value: "8080"}
+          image: nginx:stable
+          env: []
           ports:
             - name: http
               containerPort: 8080
@@ -83,7 +80,10 @@ spec:
               name: nginx-cache
             - mountPath: /var/run
               name: nginx-run
-            #- mountPath: /etc/nginx/nginx.conf
+            - mountPath: /etc/nginx/nginx.conf
+              name: nginx-conf
+              readOnly: true
+              subPath: nginx.conf
             - mountPath: /usr/share/nginx/html/{{.Values.omero.web.static_url}}
               name: web-static
               readOnly: true
@@ -102,7 +102,10 @@ spec:
       volumes:
         - name: omero-config
           configMap:
-            name: {{ include "omero-server.fullname" . }}
+            name: {{ include "omero-web.fullname" . }}
+        - name: nginx-conf
+          configMap:
+            name: {{ include "omero-web.fullname" . }}-nginx
         - name: web-static
           emptyDir: {}
         - name: nginx-cache
