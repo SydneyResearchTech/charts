@@ -1,6 +1,7 @@
 FROM openjdk:7-jdk-alpine
 ARG DOCKER_IMAGE_TAG=7-jdk-alpine
 
+
 RUN apk add --no-cache \
  curl
 
