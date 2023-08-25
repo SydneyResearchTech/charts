@@ -80,10 +80,10 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          cache-from: type=registry,ref=ghcr.io/gohitech/${{ matrix.context }}:buildcache
-          cache-to: type=registry,ref=ghcr.io/gohitech/${{ matrix.context }}:buildcache,mode=max
+          cache-from: type=registry,ref=ghcr.io/SydneyResearchTech/${{ matrix.context }}:buildcache
+          cache-to: type=registry,ref=ghcr.io/SydneyResearchTech/${{ matrix.context }}:buildcache,mode=max
           context: build/${{ matrix.context }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/gohitech/${{ matrix.context }}:${{ env.DOCKER_IMAGE_TAG }}
+            ghcr.io/SydneyResearchTech/${{ matrix.context }}:${{ env.DOCKER_IMAGE_TAG }}
