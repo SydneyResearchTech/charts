@@ -11,7 +11,7 @@ RUN curl -OLsS http://mirc.rsna.org/download/CTP-installer.jar \
 
 RUN mkdir -p /JavaPrograms/lib/ext \
  && unzip ImageIOJars.zip -d /JavaPrograms/lib/ext \
- && java xf CTP-installer.jar /JavaPrograms/CTP
+ && jar xf CTP-installer.jar /JavaPrograms/CTP
 
 
 
@@ -26,6 +26,9 @@ COPY --from=build /JavaPrograms /JavaPrograms
 COPY ./ /
 
 ENV CLASSPATH="/JavaPrograms/CTP:/JavaPrograms/lib/ext"
+
+ENV TZ=Australia/Sydney
+
 WORKDIR /JavaPrograms/CTP
 
 CMD ["java","-jar","/JavaPrograms/CTP/Runner.jar"]
