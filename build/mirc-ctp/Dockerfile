@@ -21,7 +21,7 @@ RUN apt-get update && apt-get -y install \
  openjdk-17-jre-headless \
  && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /JavaPrograms /JavaPrograms
+COPY --from=build /JavaPrograms/ /JavaPrograms/
 
 COPY ./ /
 
