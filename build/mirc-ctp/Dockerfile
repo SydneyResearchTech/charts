@@ -11,8 +11,7 @@ RUN curl -OLsS http://mirc.rsna.org/download/CTP-installer.jar \
 
 RUN mkdir -p /JavaPrograms/lib/ext \
  && unzip ImageIOJars.zip -d /JavaPrograms/lib/ext \
- && jar xf CTP-installer.jar /JavaPrograms/CTP
-
+ && unzip CTP-installer.jar -d /JavaPrograms
 
 
 FROM debian:stable-slim
