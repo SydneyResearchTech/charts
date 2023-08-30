@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- https://mircwiki.rsna.org/index.php?title=CTP-The_RSNA_Clinical_Trial_Processor -->
-<Configuration>
-  <Server
-    port="8080"
-  />
-</Configuration>

@@ -7,9 +7,8 @@ RUN apt-get update && apt-get -y install \
 
 ARG TARGETARCH
 
-RUN [ "${TARGETARCH}" = "amd64" ] && IMAGEIO="linux-x86_64.zip" || IMAGEIO="ImageIOJars.zip"
-
-RUN curl -LOsS http://mirc.rsna.org/download/CTP-installer.jar \
+RUN if [ "${TARGETARCH}" = "amd64" ]; then export IMAGEIO="linux-x86_64.zip"; else export IMAGEIO="ImageIOJars.zip"; fi \
+ && curl -LOsS http://mirc.rsna.org/download/CTP-installer.jar \
  && curl -LOsS http://mirc.rsna.org/ImageIO/${IMAGEIO}
 
 RUN mkdir -p /JavaPrograms/ext /JavaPrograms/lib \
