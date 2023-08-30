@@ -9,10 +9,10 @@ ARG TARGETARCH
 
 RUN if [ "${TARGETARCH}" = "amd64" ]; then export IMAGEIO="linux-x86_64.zip"; else export IMAGEIO="ImageIOJars.zip"; fi \
  && curl -LOsS http://mirc.rsna.org/download/CTP-installer.jar \
- && curl -LOsS http://mirc.rsna.org/ImageIO/${IMAGEIO}
+ && curl -o ImageIO-arch.zip -LsS http://mirc.rsna.org/ImageIO/${IMAGEIO}
 
 RUN mkdir -p /JavaPrograms/ext /JavaPrograms/lib \
- && unzip "${IMAGEIO}" -d /JavaPrograms/ext \
+ && unzip ImageIO-arch.zip -d /JavaPrograms/ext \
  && mv /JavaPrograms/ext/*.so /JavaPrograms/lib \
  && unzip CTP-installer.jar -d /JavaPrograms
 
