@@ -40,6 +40,7 @@ jobs:
   build-and-push-image:
     if: ${{ needs.check.outputs.contexts != '' }}
     strategy:
+      fail-fast: false
       matrix:
         context: ${{ fromJSON(needs.check.outputs.contexts) }}
     needs:

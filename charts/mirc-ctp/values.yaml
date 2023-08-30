@@ -1,0 +1,157 @@
+# Default values for mirc-ctp.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# config.xml
+# '@' translates to an xml property
+Configuration:
+  Pipeline:
+    - '@name': Main Pipeline
+      DicomImportService:
+        '@name': DicomImportService
+        '@class': org.rsna.ctp.stdstages.DicomImportService
+        '@root': vol/roots/dicom-import
+        '@port': 1104
+      FileStorageService:
+        '@name': FileStorageService
+        '@class': org.rsna.ctp.stdstages.FileStorageService
+        '@root': storage
+        '@returnStorageFile': no
+        '@quarantine': vol/quarantines/storage
+      DicomAnonymizer:
+        '@name': DicomAnonymizer
+        '@class': org.rsna.ctp.stdstages.DicomAnonymizer
+        '@root': vol/roots/anonymizer
+        '@script': scripts/da.script
+        '@quarantine': vol/quarantines/anonymizer
+      HttpExportService:
+        '@name': HttpExportService
+        '@class': org.rsna.ctp.stdstages.HttpExportService
+        '@root': vol/roots/http-export
+        '@url': https://university.edu:1443
+
+  Plugin:
+    - '@name': log name
+      '@id': pluginID
+      '@class': org.rsna.ctp.stdplugins.AuditLog
+      '@root': vol/root-directory
+
+  Server:
+    '@port': 8080
+    '@ssl': "no"
+    '@requireAuthentication': "no"
+    '@usersClassName': org.rsna.server.UsersXmlFileImpl
+    ProxyServer:
+      '@proxyIPAddress': ""
+      '@proxyPort': ""
+      '@proxyUsername': ""
+      '@proxyPassword': ""
+    SSL:
+      '@keyStore': ""
+      '@keystorePassword': ""
+      '@truststore': ""
+      '@truststorePassword': ""
+
+# users:
+#   '@mode': digest
+#   user:
+#     - '@password': "126680608771750945340162210354335764377"
+#       '@username': admin
+#       role:
+#         - admin
+#     - '@password': "126680608771750945340162210354335764377"
+#       '@username': king
+#       role:
+#         - admin
+#         - shutdown
+
+volumes:
+  - name: vol
+    emptyDir: {}
+  - name: storage
+    emptyDir: {}
+
+volumeMounts:
+  - mountPath: /JavaPrograms/CTP/vol
+    name: vol
+  - mountPath: /JavaPrograms/CTP/storage
+    name: storage
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/sydneyresearchtech/mirc-ctp
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

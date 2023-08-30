@@ -1,0 +1,125 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mirc-ctp.fullname" . }}
+  labels:
+    {{- include "mirc-ctp.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "mirc-ctp.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- end }}
+      labels:
+        {{- include "mirc-ctp.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "mirc-ctp.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /JavaPrograms/CTP/CACHE
+              name: cache
+            - mountPath: /JavaPrograms/CTP/logs
+              name: logs
+            - mountPath: /JavaPrograms/config
+              name: config
+              readOnly: true
+            {{- .Values.volumeMounts |toYaml |nindent 12 }}
+        - name: ctp-log
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: busybox
+          command: ["sh","-c"]
+          args:
+            - |
+              exec tail -F -n 1000 "${LOG_FILE}"
+          env:
+            - {name: LOG_FILE, value: /JavaPrograms/CTP/logs/ctp.log}
+          volumeMounts:
+            - mountPath: /JavaPrograms/CTP/logs
+              name: logs
+              readOnly: true
+      initContainers:
+        - name: copy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ['sh','-c']
+          args:
+            - |
+              set -x
+              cp /JavaPrograms/config/* /config/
+          volumeMounts:
+            - mountPath: /config
+              name: config
+        - name: config
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: ghcr.io/sydneyresearchtech/python:alpine3.18
+          command: ['sh','-c']
+          args:
+            - |
+              set -x
+              [ -f /k8s-config/config.yaml ] && yaml2xml /k8s-config/config.yaml /config/config.xml ||:
+              [ -f /k8s-config/users.yaml ] && yaml2xml /k8s-config/users.yaml /config/users.xml ||:
+          volumeMounts:
+            - mountPath: /k8s-config
+              name: config-yaml
+              readOnly: true
+            - mountPath: /config
+              name: config
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: cache
+          emptyDir: {}
+        - name: logs
+          emptyDir: {}
+        - name: config
+          emptyDir: {}
+        - name: config-yaml
+          configMap:
+            name: {{ include "mirc-ctp.fullname" . }}
+        {{- .Values.volumes |toYaml |nindent 8 }}

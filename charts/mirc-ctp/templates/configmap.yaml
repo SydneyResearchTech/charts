@@ -1,0 +1,16 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mirc-ctp.fullname" . }}
+  labels:
+    {{- include "mirc-ctp.labels" . | nindent 4 }}
+data:
+  config.yaml: |
+    Configuration:
+      {{- .Values.Configuration |toYaml |nindent 6 }}
+  {{- if .Values.users }}
+  users.yaml: |
+    users:
+      {{- .Values.users |toYaml |nindent 6 }}
+  {{ end }}
