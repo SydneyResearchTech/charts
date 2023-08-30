@@ -3,14 +3,18 @@ ARG DOCKER_IMAGE_TAG=0.1.0
 
 RUN apt-get update && apt-get -y install \
  curl \
- openjdk-17-jdk-headless \
  unzip
 
-RUN curl -OLsS http://mirc.rsna.org/download/CTP-installer.jar \
- && curl -OLsS http://mirc.rsna.org/ImageIO/ImageIOJars.zip
+ARG TARGETARCH
 
-RUN mkdir -p /JavaPrograms/lib/ext \
- && unzip ImageIOJars.zip -d /JavaPrograms/lib/ext \
+RUN [ "${TARGETARCH}" = "amd64" ] && IMAGEIO="linux-x86_64.zip" || IMAGEIO="ImageIOJars.zip"
+
+RUN curl -LOsS http://mirc.rsna.org/download/CTP-installer.jar \
+ && curl -LOsS http://mirc.rsna.org/ImageIO/${IMAGEIO}
+
+RUN mkdir -p /JavaPrograms/ext /JavaPrograms/lib \
+ && unzip "${IMAGEIO}" -d /JavaPrograms/ext \
+ && mv /JavaPrograms/ext/*.so /JavaPrograms/lib \
  && unzip CTP-installer.jar -d /JavaPrograms
 
 
@@ -24,10 +28,13 @@ COPY --from=build /JavaPrograms/ /JavaPrograms/
 
 COPY ./ /
 
-ENV CLASSPATH="/JavaPrograms/CTP:/JavaPrograms/lib/ext"
+RUN ln -sfr /JavaPrograms/config/config.xml /JavaPrograms/CTP/config.xml
 
-ENV TZ=Australia/Sydney
+# java -XshowSettings:properties -version
+ENV CLASSPATH="/JavaPrograms/CTP:/JavaPrograms/ext" \
+ LD_LIBRARY_PATH="/JavaPrograms/lib" \
+ TZ=Australia/Sydney
 
 WORKDIR /JavaPrograms/CTP
-
-CMD ["java","-jar","/JavaPrograms/CTP/Runner.jar"]
+EXPOSE 8080/tcp
+CMD ["java","-jar","Runner.jar"]
