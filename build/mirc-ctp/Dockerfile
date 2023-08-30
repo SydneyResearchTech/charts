@@ -13,7 +13,7 @@ RUN if [ "${TARGETARCH}" = "amd64" ]; then export IMAGEIO="linux-x86_64.zip"; el
 
 RUN mkdir -p /JavaPrograms/ext /JavaPrograms/lib \
  && unzip ImageIO-arch.zip -d /JavaPrograms/ext \
- && mv /JavaPrograms/ext/*.so /JavaPrograms/lib \
+ && mv /JavaPrograms/ext/*.so /JavaPrograms/lib ||: \
  && unzip CTP-installer.jar -d /JavaPrograms
 
 
