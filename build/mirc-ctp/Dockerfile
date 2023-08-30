@@ -27,7 +27,10 @@ COPY --from=build /JavaPrograms/ /JavaPrograms/
 
 COPY ./ /
 
-RUN ln -sfr /JavaPrograms/config/config.xml /JavaPrograms/CTP/config.xml
+RUN ln -sfr /JavaPrograms/config/config.xml /JavaPrograms/CTP/config.xml \
+ && ln -sfr /JavaPrograms/config/index.html /JavaPrograms/CTP/ROOT/index.html \
+ && ln -sfr /JavaPrograms/config/keystore /JavaPrograms/CTP/keystore \
+ && ln -sfr /JavaPrograms/config/users.xml /JavaPrograms/CTP/users.xml
 
 # java -XshowSettings:properties -version
 ENV CLASSPATH="/JavaPrograms/CTP:/JavaPrograms/ext" \
