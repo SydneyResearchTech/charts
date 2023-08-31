@@ -267,242 +267,6 @@ omero-server:
 ## @section OMERO web parameters
 omero-web:
   enabled: true
-  omeroTmpDir: "/opt/omero/server/omero/tmp"
-  omeroDir: "/opt/omero/web/OMERO.web"
-  omeroLoadDir: "/omero-config.d"
-
-  omeroWeb:
-    viewer:
-      iviewer:
-        enabled: true
-
-  # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#web-configuration
-  # @param omero.web.admins A list of people who get code error notifications whenever the application identifies a broken link or raises an unhandled exception that results in an internal server error
-  # @param omero.web.application_server OMERO.web is configured to run in Gunicorn as a generic WSGI (TCP)application by default
-  # @param omero.web.application_server.host The front-end webserver
-  # @param omero.web.application_server.max_requests The maximum number of requests a worker will process before restarting
-  # @param omero.web.application_server.port Upstream application port
-  # @param omero.web.apps Add additional Django applications
-  # @param omero.web.base_include_template Template to be included in every page, at the end of the <body>
-  # @param omero.web.caches OMERO.web offers alternative session backends to automatically delete stale data using the cache session store backend
-  # @param omero.web.chunk_size Size, in bytes, of the “chunk”
-  # @param omero.web.cors_origin_allow_all If True, cors_origin_whitelist will not be used and all origins will be authorized to make cross-site HTTP requests
-  # @param omero.web.cors_origin_whitelist A list of origin hostnames that are authorized to make cross-site HTTP requests
-  # @param omero.web.csrf_cookie_httponly Prevent CSRF cookie from being accessed in JavaScript. Currently disabled as it breaks background JavaScript POSTs in OMERO.web
-  # @param omero.web.csrf_cookie_secure Restrict CSRF cookies to HTTPS only, you are strongly recommended to set this to true in production
-  # @param omero.web.databases
-  # @param omero.web.debug A boolean that turns on/off debug mode
-  # @param omero.web.favicon_url Favicon URL, specifies the path relative to django’s static file dirs
-  # @param omero.web.feedback.comment.enabled Enable the feedback form for comments
-  # @param omero.web.feedback.error.enabled Enable the feedback form for errors
-  # @param omero.web.html_meta_referrer Default content for the HTML Meta referrer tag
-  # @param omero.web.index_template Define template used as an index page http://your_host/omero/
-  # @param omero.web.logdir A path to the custom log directory
-  # @param omero.web.login.client_downloads_base GitHub repository containing the Desktop client downloads
-  # @param omero.web.login.show_client_downloads Whether to link to official client downloads on the login page
-  # @param omero.web.login_incorrect_credentials_text The error message shown to users who enter an incorrect username or password
-  # @param omero.web.login_logo Customize webclient login page with your own logo
-  # @param omero.web.login_redirect Redirect to the given location after logging in
-  # @param omero.web.login_view The Django view name used for login
-  # @param omero.web.max_table_download_rows Prevent download of OMERO.tables exceeding this number of rows in a single request
-  # @param omero.web.maximum_multifile_download_size Prevent multiple files with total aggregate size greater than this value in bytes from being downloaded as a zip archive
-  # @param omero.web.middleware List of Django middleware classes
-  # @param omero.web.nginx_server_extra_config Extra configuration lines to add to the Nginx server block
-  # @param omero.web.open_with A list of viewers that can be used to display selected Images or other objects
-  # @param omero.web.page_size Number of images displayed within a dataset or ‘orphaned’ container to prevent from loading them all at once
-  # @param omero.web.ping_interval Timeout interval between ping invocations in seconds
-  # @param omero.web.pipeline_css_compressor Compressor class to be applied to CSS files. If empty or None, CSS files won’t be compressed.
-  # @param omero.web.pipeline_js_compressor Compressor class to be applied to JavaScript files. If empty or None, JavaScript files won’t be compressed.
-  # @param omero.web.pipeline_staticfile_storage The file storage engine to use when collecting static files with the collectstatic management command
-  # @param omero.web.plate_layout If ‘shrink’, the plate will not display rows and columns before the first Well, or after the last Well. If ‘trim’, the plate will only show Wells from A1 to the last Well. If ‘expand’ (default), the plate will expand from A1 to a multiple of 12 columns x 8 rows after the last Well
-  # @param omero.web.prefix Used as the value of the SCRIPT_NAME environment variable in any HTTP request
-  # @param omero.web.public.cache.enabled
-  # @param omero.web.public.cache.key
-  # @param omero.web.public.cache.timeout
-  # @param omero.web.public.enabled Enable and disable the OMERO.web public user functionality
-  # @param omero.web.public.get_only Restrict public users to GET requests only
-  # @param omero.web.public.password Password to use during authentication
-  # @param omero.web.public.server_id Server to authenticate against
-  # @param omero.web.public.url_filter Set a regular expression that matches URLs the public user is allowed to access
-  # @param omero.web.public.user Username to use during authentication
-  # @param omero.web.redirect_allowed_hosts If you wish to allow redirects to an external site, the domains must be listed here
-  # @param omero.web.root_application Override the root application label that handles /
-  # @param omero.web.search.default_group ID of group to pre-select in search form
-  # @param omero.web.search.default_user ID of user to pre-select in search form
-  # @param omero.web.secret_key A boolean that sets SECRET_KEY for a particular Django installation
-  # @param omero.web.secure Force all backend OMERO.server connections to use SSL
-  # @param omero.web.secure_proxy_ssl_header A tuple representing a HTTP header/value combination that signifies a request is secure
-  # @param omero.web.server_list A list of servers the Web client can connect to
-  # @param omero.web.session_cookie_age The age of session cookies, in seconds
-  # @param omero.web.session_cookie_domain The domain to use for session cookies
-  # @param omero.web.session_cookie_name The name to use for session cookies
-  # @param omero.web.session_cookie_path The path to use for session cookies
-  # @param omero.web.session_cookie_secure Restrict session cookies to HTTPS only, you are strongly recommended to set this to true in production
-  # @param omero.web.session_engine Controls where Django stores session data
-  # @param omero.web.session_expire_at_browser_close A boolean that determines whether to expire the session when the user closes their browser
-  # @param omero.web.sharing.opengraph Dictionary of server-name: site-name, where server-name matches a name from omero.web.server_list
-  # @param omero.web.sharing.twitter Dictionary of server-name: @twitter-site-username, where server-name matches a name from omero.web.server_list
-  # @param omero.web.show_forgot_password Allows to hide ‘Forgot password’ from the login view
-  # @param omero.web.static_root The absolute path to the directory where collectstatic will collect static files for deployment
-  # @param omero.web.static_url URL to use when referring to static files
-  # @param omero.web.staticfile_dirs Defines the additional locations the staticfiles app will traverse if the FileSystemFinder finder is enabled
-  # @param omero.web.template_dirs List of locations of the template source files, in search order
-  # @param omero.web.thumbnails_batch Number of thumbnails retrieved to prevent from loading them all at once
-  # @param omero.web.time_zone Time zone for this installation
-  # @param omero.web.top_logo Customize the webclient top bar logo
-  # @param omero.web.top_logo_link The target location of the webclient top logo, default unlinked
-  # @param omero.web.ui.center_plugins Add plugins to the center panels
-  # @param omero.web.ui.metadata_panes Manage Metadata pane accordion
-  # @param omero.web.ui.right_plugins Add plugins to the right-hand panel
-  # @param omero.web.ui.top_links Add links to the top header
-  # @param omero.web.use_x_forwarded_host Specifies whether to use the X-Forwarded-Host header in preference to the Host header
-  # @param omero.web.user_dropdown Whether or not to include a user dropdown in the base template
-  # @param omero.web.viewer.view Django view which handles display of, or redirection to, the desired full image viewer
-  # @param omero.web.webgateway_cache
-  # @param omero.web.wsgi_args A string representing Gunicorn additional arguments
-  # @param omero.web.wsgi_timeout Workers silent for more than this many seconds are killed and restarted
-  # @param omero.web.wsgi_workers The number of worker processes for handling requests
-  # @param omero.web.x_frame_options Whether to allow OMERO.web to be loaded in a frame
-  omero:
-    web:
-      admins: []
-      application_server:
-        # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#omero-web-application-server
-        type: "wsgi-tcp"
-        host: "127.0.0.1"
-        max_requests: 0
-        port: "4080"
-      apps: []
-      #  - omero_oauth
-      #  base_include_template: ""
-      caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
-      chunk_size: 1048576
-      cors_origin_allow_all: false
-      cors_origin_whitelist: []
-      csrf_cookie_httponly: false
-      csrf_cookie_secure: false
-      databases: {}
-      debug: false
-      django_additional_settings: []
-      feedback:
-        comment:
-          enabled: true
-        error:
-          enabled: true
-      html_meta_referrer: origin-when-crossorigin
-      index_template: ""
-      logdir: /opt/omero/web/OMERO.web/var/log
-      login:
-        client_downloads_base: ome/omero-insight
-        show_client_downloads: true
-        login_incorrect_credentials_text: Connection not available, please check your user name and password.
-      login_logo: ""
-      login_redirect: {}
-      login_view: weblogin
-      maximum_multifile_download_size: 1073741824
-      # middleware: |
-      nginx_server_extra_config: []
-      open_with: [[”Image viewer”, ”webgateway”, {”supported_objects”: [”image”], ”script_url”: ”webclient/javascript/ome.openwith_viewer.js”}]]
-      # https://gitlab.com/openmicroscopy/incubator/omero-oauth
-      # oauth:
-      #   display:
-      #     name: OAuth Client
-      #   host:
-      #   port: 4064
-      #   admin:
-      #     user:
-      #     password:
-      #   user:
-      #     timeout: 86400
-      #   group:
-      #     name:
-      #     templatetime: false
-      #     perms:
-      #   sessiontoken:
-      #     enabled: false
-      #   providers: []
-      #   - name: google
-      #     displayname: Google
-      #     url:
-      #       authorisation: https://accounts.google.com/o/oauth2/v2/auth
-      #       token:  https://oauth2.googleapis.com/token
-      #       userinfo: https://openidconnect.googleapis.com/v1/userinfo
-      #       callback: https://OMERO.WEB.HOST/oauth/callback/google
-      #     client:
-      #       id: CLIENT_ID
-      #       secret: SECRET_ID
-      #       scopes:
-      #       - openid
-      #       - https://www.googleapis.com/auth/userinfo.email
-      #       - https://www.googleapis.com/auth/userinfo.profile
-      #     openid:
-      #       issuer: https://accounts.google.com
-      #       verify: true
-      #     authorization:
-      #       params:
-      #         prompt: select_account
-      #     userinfo:
-      #       type: openid
-      #     user:
-      #       name: 'google-{sub}'
-      #       email: '{email}'
-      #       firstname: '{given_name}'
-      #       lastname: '{family_name}'
-      page_size: 200
-      ping_interval: 60000
-      pipeline_css_compressor: ""
-      pipeline_js_compressor: ""
-      pipeline_staticfile_storage: pipeline.storage.PipelineStorage
-      prefix: ""
-      public:
-        cache:
-          enabled: false
-          key: omero.web.public.cache.key
-          timeout: 86400
-        enabled: false
-        get_only: true
-        password: None
-        server_id: 1
-        url_filter: (?#This regular expression matches nothing)a^
-        user: None
-      redirect_allowed_hosts: []
-      root_application: ""
-      # https://docs.djangoproject.com/en/4.2/ref/settings/#secret-key
-      secret_key: ""
-      secure: false
-      secure_proxy_ssl_header: []
-      server_list: [["localhost", 4064, "omero"]]
-      session_cookie_age: 86400
-      session_cookie_domain: None
-      session_cookie_name: None
-      session_cookie_path: None
-      session_cookie_secure: false
-      session_engine: 'omeroweb.filesessionstore'     # https://docs.djangoproject.com/en/1.11/ref/settings/#session-engine
-      session_expire_at_browser_close: true
-      sharing:
-        opengraph: {}     # '{"omero": "@openmicroscopy"}'
-      static_root: "/opt/omero/web/OMERO.web/var/static"
-      static_url: "/static/"
-      staticfile_dirs: []
-      template_dirs: []
-      thumbnails_batch: 50
-      time_zone: "Australia/Sydney"
-      top_logo: ""
-      top_logo_link: ""
-      ui:
-        center_plugins: []
-        # metadata_panes:
-        # right_plugins:
-        # top_links:
-      use_x_forwarded_host: true
-      user_dropdown: true
-      viewer:
-        view: omeroweb.webclient.views.image_viewer
-      # webgateway_cache: None
-      wsgi_args: "--access-logfile - --error-logfile - --loglevel debug"
-      wsgi_timeout: 60
-      wsgi_workers: 5
-      x_frame_options: SAMEORIGIN
 
   replicaCount: 1
 
@@ -602,6 +366,46 @@ omero-web:
   tolerations: []
 
   affinity: {}
+
+service:
+  type: ClusterIP
+  port: 4080
+
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+    # nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
+  hosts:
+    - host: chart-example.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: omero-web
+              port:
+                number: 4080
+        - path: /static/
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: omero-web-static
+              port:
+                number: 8080
+        - path: /omero-wss/
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: omero-server-websocket
+              port:
+                number: 4066
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
 
 ## @section postgresql parameters
 ## Please reference [PostgreSQL packaged by Bitnami](https://github.com/bitnami/charts/tree/master/bitnami/postgresql/) for more details

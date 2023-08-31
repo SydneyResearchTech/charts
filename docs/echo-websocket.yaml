@@ -1,0 +1,55 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: websockets-test
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: websocket
+  selector:
+    app: websockets-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: websockets-test
+spec:
+  selector:
+    matchLabels:
+      app: websockets-test
+  template:
+    metadata:
+      labels:
+        app: websockets-test
+    spec:
+      containers:
+      - name: websockets-test
+        image: ghcr.io/gohitech/echoserver-websocket:1.0.0
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+          periodSeconds: 1
+        ports:
+        - containerPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: websockets-test
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "websockets-test.sydney.edu.au"
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: websockets-test
+                port:
+                  number: 8080

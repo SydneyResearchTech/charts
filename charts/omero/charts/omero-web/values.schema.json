@@ -6,27 +6,23 @@
       "minLength": 1
     }
   },
-  "properties": {
-    "omero": {
-      "description": "",
-      "properties": {
-        "web": {
-          "description": "",
-          "properties": {
-            "secret_key": {
-              "description": "sets SECRET_KEY for a particular Django installation",
-              "$ref": "#/definitions/nonEmptyString"
-            }
-          },
-          "required": ["secret_key"],
-          "type": "object"
-        }
-      },
-      "required": ["web"],
-      "type": "object"
-    }
-  },
-  "required": ["omero"],
-  "title": "Values",
-  "type": "object"
+  "title": "Values", "type": "object", "required": ["omero"], "properties": {
+    "omero": {"type": "object", "required": ["web"], "properties": {
+      "web": {"type": "object", "required": ["admins", "secret_key"], "properties": {
+        "admins": {"type": "array", "items": {
+          "type": "array", "prefixItems": [{"type": "string"}, {"type": "string"}]
+        }},
+        "caches": {"type": "string"},
+        "chunk_size": {"type": "integer"},
+        "cors_origin_allow_all": {"type": "boolean"},
+        "cors_origin_whitelist": {"type": "array"},
+        "csrf_cookie_httponly": {"type": "boolean"},
+        "csrf_cookie_secure": {"type": "boolean"},
+        "databases": {"type": "object"},
+        "debug": {"type": "boolean"},
+        "django_additional_settings": {"type": "array"},
+        "secret_key": {"type": "string", "minLength": 30, "description": "sets SECRET_KEY for a particular Django installation"}
+      }}
+    }}
+  }
 }

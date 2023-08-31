@@ -103,7 +103,7 @@ omero:
     IceSSL:
       CAs: server.pem
       CertFile: server.p12
-      Ciphers: HIGH
+      Ciphers: ADH:HIGH
       DefaultDir: "/OMERO/certs"
       Password: 30263c05-3101-4a4e-8008-a1a46171959e
       ProtocolVersionMax: TLS1_2
@@ -131,12 +131,12 @@ omero:
   # @param omero.client.viewer.interpolate_pixels Client viewers interpolate pixels by default
   # @param omero.client.viewer.roi_limit Client viewers roi limit
   # @param omero.client.web.host Absolute omeroweb host http(s)://your_domain/prefix/
-  # client:
+  client:
   #   browser:
   #     thumb_default_size: 96
   #   download_as:
   #     max_size: 144000000
-  #   icetransports: "ssl,tcp"
+    icetransports: "ssl,tcp,wss"
   #   scripts_to_ignore: "/omero/figure_scripts/Movie_Figure.py,/omero/figure_scripts/Split_View_Figure.py,/omero/figure_scripts/Thumbnail_Figure.py,/omero/figure_scripts/ROI_Split_Figure.py,/omero/export_scripts/Make_Movie.py,/omero/import_scripts/Populate_ROI.py"
   #   ui:
   #     menu:
@@ -238,6 +238,17 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 1000
   runAsGroup: 1000
+
+services:
+  omero:
+    type: ClusterIP
+    port: 4063
+  omero_ssl:
+    type: ClusterIP
+    port: 4064
+  omero_wss:
+    type: ClusterIP
+    port: 4066
 
 service:
   type: ClusterIP

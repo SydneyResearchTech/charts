@@ -1,5 +1,8 @@
-{{- define "omero-web.web.server_list" -}}
-{{- printf "%s-omero-server" .Chart.Name }}
+
+{{- define "omero-web.server_list" -}}
+{{- if not .Values.omero.web.server_list }}
+{{- printf "[[\"%s-omero-server\",4064,\"omero\"]]" .Release.Name }}
+{{- end }}
 {{- end }}
 
 {{/*

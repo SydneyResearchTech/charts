@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "definitions": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "title": "Values", "type": "object", "required": ["omero"], "properties": {
+    "omero": {"type": "object", "required": ["client","glacier2"], "properties": {
+      "client": {"type": "object", "required": ["icetransports"], "properties": {
+        "icetransports": {"type": "string", "pattern": "^((ssl|tcp|ws|wss),?)+$"}
+      }},
+      "glacier2": {"type": "object", "required": ["IceSSL"], "properties": {
+        "IceSSL": {"type": "object", "required": ["Ciphers","Protocols","ProtocolVersionMax"], "properties": {
+          "Ciphers": {"type": "string", "pattern": "^((ADH|HIGH):?)+$"},
+          "DefaultDir": {"type": "string"},
+          "Password": {"type": "string", "minLength": 30},
+          "Protocols": {"type": "string", "pattern": "^((TLS1_0|TLS1_1|TLS1_2),?)+$"},
+          "ProtocolVersionMax": {"type": "string", "pattern": "^(TLS1_0|TLS1_1|TLS1_2){1}$"}
+        }}
+      }}
+    }}
+  }
+}

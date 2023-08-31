@@ -48,6 +48,12 @@ spec:
             - name: ice-router-ssl
               containerPort: 4064
               protocol: TCP
+            - name: ice-router-ws
+              containerPort: 4065
+              protocol: TCP
+            - name: ice-router-wss
+              containerPort: 4066
+              protocol: TCP
           livenessProbe:
             tcpSocket:
               port: ice-router
@@ -79,8 +85,7 @@ spec:
           command: ["sh","-c"]
           args:
             - |
-              until [ -f "${LOG_FILE}" ]; do sleep 2; done
-              exec tail -f "${LOG_FILE}"
+              exec tail -F -n 1000 "${LOG_FILE}"
           env:
             - {name: LOG_FILE, value: {{ $p }}}
           volumeMounts:

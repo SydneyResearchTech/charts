@@ -1,6 +1,13 @@
 apiVersion: v2
 name: omero
-description: OMERO helm chart for Kubernetes
+description: Open Microscopy Environment OMERO for Scientists
+home: https://www.openmicroscopy.org/omero/
+maintainers:
+  - name: Dean Taylor
+    email: dean.taylor@sydney.edu.au
+    url: https://au.linkedin.com/in/dean-taylor-a8699238
+deprecated: false
+annotations: {}
 
 # A chart can be either an 'application' or a 'library' chart.
 #
@@ -15,7 +22,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.1.3
+version: 0.1.4
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to

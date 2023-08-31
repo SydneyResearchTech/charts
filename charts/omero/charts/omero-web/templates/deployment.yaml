@@ -50,6 +50,8 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - mountPath: /omero
+              name: omero-temp-dir
             - mountPath: {{.Values.omeroLoadDir}}/00kubernetes-configmap.omero
               name: omero-config
               readOnly: true
@@ -100,6 +102,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+        - {name: omero-temp-dir, emptyDir: {}}
         - name: omero-config
           configMap:
             name: {{ include "omero-web.fullname" . }}
