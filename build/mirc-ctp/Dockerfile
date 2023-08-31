@@ -1,5 +1,5 @@
 FROM debian:stable-slim as build
-ARG DOCKER_IMAGE_TAG="2023.05.23"
+ARG DOCKER_IMAGE_TAG=2023.05.23
 
 RUN apt-get update && apt-get -y install \
  curl \
