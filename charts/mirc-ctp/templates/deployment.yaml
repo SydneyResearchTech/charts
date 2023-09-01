@@ -38,14 +38,31 @@ spec:
             - name: http
               containerPort: {{ .Values.service.port }}
               protocol: TCP
+          {{- if .Values.Configuration.Pipeline -}}
+          {{- range $i,$p := .Values.Configuration.Pipeline }}
+              {{- range $k,$v := $p }}
+                {{- if and (kindIs "map" $v) (hasKey $v "@port") }}
+            - name: {{ lower $k |trunc 13 }}-{{ $i }}
+              containerPort: {{ index $v "@port" }}
+              protocol: TCP
+                {{- end }}
+              {{- end }}
+            {{- end }}
+          {{- end }}
           livenessProbe:
             httpGet:
               path: /
               port: http
+            {{- if eq "yes" (index .Values.Configuration.Server "@ssl") }}
+              scheme: HTTPS
+            {{- end }}
           readinessProbe:
             httpGet:
               path: /
               port: http
+            {{- if eq "yes" (index .Values.Configuration.Server "@ssl") }}
+              scheme: HTTPS
+            {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
@@ -56,7 +73,15 @@ spec:
             - mountPath: /JavaPrograms/config
               name: config
               readOnly: true
-            {{- .Values.volumeMounts |toYaml |nindent 12 }}
+          {{- range $name,$p := .Values.persistence }}
+            - mountPath: {{ $p.mountPath |quote }}
+              name: {{ $name }}-pvc
+          {{- end }}
+          {{- if .Values.ssl_certs.secretName }}
+            - mountPath: /k8s-certs
+              name: k8s-certs
+              readOnly: true
+          {{- end }}
         - name: ctp-log
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
@@ -88,12 +113,16 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: ghcr.io/sydneyresearchtech/python:alpine3.18
+          env:
+            - {name: PKCS12, value: "/config/cert-chain.p12"}
           command: ['sh','-c']
           args:
             - |
               set -x
               [ -f /k8s-config/config.yaml ] && yaml2xml /k8s-config/config.yaml /config/config.xml ||:
               [ -f /k8s-config/users.yaml ] && yaml2xml /k8s-config/users.yaml /config/users.xml ||:
+              # openssl pkcs12 -in <> -inkey <> -out "${PKCS12}" -legacy -export -chain
+              # keytool -importcert -noprompt -alias ctp -file "${PKCS12}" -keystore /config/k8s-keystore -storepass ctpstore -storetype pkcs12 -providername SUN
           volumeMounts:
             - mountPath: /k8s-config
               name: config-yaml
@@ -122,4 +151,13 @@ spec:
         - name: config-yaml
           configMap:
             name: {{ include "mirc-ctp.fullname" . }}
-        {{- .Values.volumes |toYaml |nindent 8 }}
+      {{- range $name,$p := .Values.persistence }}
+        - name: {{ $name }}-pvc
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-%s" (include "mirc-ctp.fullname" $) $name) $p.existingClaim }}
+      {{- end }}
+      {{- if .Values.ssl_certs.secretName }}
+        - name: k8s-certs
+          secret:
+            secretName: {{ .Values.ssl_certs.secretName }}
+      {{- end }}

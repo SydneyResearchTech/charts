@@ -13,3 +13,27 @@ spec:
       name: http
   selector:
     {{- include "mirc-ctp.selectorLabels" . | nindent 4 }}
+{{- if .Values.Configuration.Pipeline -}}
+  {{- range $i,$p := .Values.Configuration.Pipeline }}
+    {{- range $k,$v := $p }}
+      {{- if and (kindIs "map" $v) (hasKey $v "@port") }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "mirc-ctp.fullname" $ }}-{{ lower $k |trunc 13 }}-{{ $i }}
+  labels:
+    {{- include "mirc-ctp.labels" $ | nindent 4 }}
+spec:
+  type: {{ $.Values.services.type }}
+  ports:
+    - port: {{ index $v "@port" }}
+      targetPort: {{ lower $k |trunc 13 }}-{{ $i }}
+      protocol: TCP
+      name: {{ lower $k |trunc 13 }}-{{ $i }}
+  selector:
+    {{- include "mirc-ctp.selectorLabels" $ | nindent 4 }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}

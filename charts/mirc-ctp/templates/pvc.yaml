@@ -1,0 +1,20 @@
+{{- range $name,$p := .Values.persistence }}
+{{- if not .existingClaim }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "mirc-ctp.fullname" $ }}-{{ $name }}
+  labels:
+    {{- include "mirc-ctp.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    {{- $p.accessModes |toYaml |nindent 4 }}
+  resources:
+    requests:
+      storage: {{ $p.size }}
+  {{ include "mirc-ctp.storage.class" (dict "storage" $p "global" $.Values.global) }}
+  selector:
+    {{- .selectorLabels |toYaml |nindent 4 }}
+{{- end }}
+{{- end }}

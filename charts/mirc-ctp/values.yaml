@@ -2,55 +2,58 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+global:
+  storageClass: ""
+
 # config.xml
 # '@' translates to an xml property
 Configuration:
-  Pipeline:
-    - '@name': Main Pipeline
-      DicomImportService:
-        '@name': DicomImportService
-        '@class': org.rsna.ctp.stdstages.DicomImportService
-        '@root': vol/roots/dicom-import
-        '@port': 1104
-      FileStorageService:
-        '@name': FileStorageService
-        '@class': org.rsna.ctp.stdstages.FileStorageService
-        '@root': storage
-        '@returnStorageFile': no
-        '@quarantine': vol/quarantines/storage
-      DicomAnonymizer:
-        '@name': DicomAnonymizer
-        '@class': org.rsna.ctp.stdstages.DicomAnonymizer
-        '@root': vol/roots/anonymizer
-        '@script': scripts/da.script
-        '@quarantine': vol/quarantines/anonymizer
-      HttpExportService:
-        '@name': HttpExportService
-        '@class': org.rsna.ctp.stdstages.HttpExportService
-        '@root': vol/roots/http-export
-        '@url': https://university.edu:1443
+  # Pipeline:
+  #   - '@name': Main Pipeline
+  #     DicomImportService:
+  #       '@name': DicomImportService
+  #       '@class': org.rsna.ctp.stdstages.DicomImportService
+  #       '@root': /scratch/root/dicom-import
+  #       '@port': 1104
+  #     FileStorageService:
+  #       '@name': FileStorageService
+  #       '@class': org.rsna.ctp.stdstages.FileStorageService
+  #       '@root': /storage
+  #       '@returnStorageFile': no
+  #       '@quarantine': /scratch/quarantine/storage
+  #     DicomAnonymizer:
+  #       '@name': DicomAnonymizer
+  #       '@class': org.rsna.ctp.stdstages.DicomAnonymizer
+  #       '@root': /scratch/root/anonymizer
+  #       '@script': scripts/da.script
+  #       '@quarantine': /scratch/quarantine/anonymizer
+  #     HttpExportService:
+  #       '@name': HttpExportService
+  #       '@class': org.rsna.ctp.stdstages.HttpExportService
+  #       '@root': /scratch/root/http-export
+  #       '@url': https://university.edu:1443
 
-  Plugin:
-    - '@name': log name
-      '@id': pluginID
-      '@class': org.rsna.ctp.stdplugins.AuditLog
-      '@root': vol/root-directory
+  # Plugin:
+  #   - '@name': log name
+  #     '@id': pluginID
+  #     '@class': org.rsna.ctp.stdplugins.AuditLog
+  #     '@root': vol/root-directory
 
   Server:
     '@port': 8080
     '@ssl': "no"
-    '@requireAuthentication': "no"
+    '@requireAuthentication': "yes"
     '@usersClassName': org.rsna.server.UsersXmlFileImpl
-    ProxyServer:
-      '@proxyIPAddress': ""
-      '@proxyPort': ""
-      '@proxyUsername': ""
-      '@proxyPassword': ""
+    # ProxyServer:
+    #   '@proxyIPAddress': ""
+    #   '@proxyPort': ""
+    #   '@proxyUsername': ""
+    #   '@proxyPassword': ""
     SSL:
-      '@keyStore': ""
-      '@keystorePassword': ""
-      '@truststore': ""
-      '@truststorePassword': ""
+      '@keystore': "keystore"
+      '@keystorePassword': "ctpstore"
+      # '@truststore': ""
+      # '@truststorePassword': ""
 
 # users:
 #   '@mode': digest
@@ -65,17 +68,28 @@ Configuration:
 #         - admin
 #         - shutdown
 
-volumes:
-  - name: vol
-    emptyDir: {}
-  - name: storage
-    emptyDir: {}
+persistence:
+  storage:
+    mountPath: /storage
+    storageClass: ""
+    annotations: {}
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    existingClaim: ""
+    selectorLabels: {}
+  scratch:
+    mountPath: /scratch
+    storageClass: ""
+    annotations: {}
+    accessModes:
+      - ReadWriteOnce
+    size: 1Gi
+    existingClaim: ""
+    selectorLabels: {}
 
-volumeMounts:
-  - mountPath: /JavaPrograms/CTP/vol
-    name: vol
-  - mountPath: /JavaPrograms/CTP/storage
-    name: storage
+ssl_certs:
+  secretName: ""
 
 replicaCount: 1
 
@@ -114,6 +128,10 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 8080
+
+# Configuration.Pipeline service settings
+services:
+  type: LoadBalancer
 
 ingress:
   enabled: false
