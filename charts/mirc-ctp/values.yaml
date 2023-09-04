@@ -5,7 +5,8 @@
 global:
   storageClass: ""
 
-# config.xml
+# config.xml configuration options
+# https://mircwiki.rsna.org/index.php?title=MIRC_CTP#Server
 # '@' translates to an xml property
 Configuration:
   # Pipeline:
