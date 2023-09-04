@@ -3,6 +3,21 @@ entries:
   mirc-ctp:
   - apiVersion: v2
     appVersion: 2023.05.23
+    created: "2023-09-04T00:33:56.945675967Z"
+    description: Clinical Trials Processor
+    digest: d2f9ec6d64d8ed0fa8b708bd2a8a07963f3d87a1b5e425287e4371d743b712c0
+    home: https://mircwiki.rsna.org/
+    maintainers:
+    - email: dean.taylor@sydney.edu.au
+      name: Dean Taylor
+      url: https://au.linkedin.com/in/dean-taylor-a8699238
+    name: mirc-ctp
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/mirc-ctp-1.0.0/mirc-ctp-1.0.0.tgz
+    version: 1.0.0
+  - apiVersion: v2
+    appVersion: 2023.05.23
     created: "2023-08-31T00:33:52.611365774Z"
     description: Clinical Trials Processor
     digest: bf0d6d73da75a7e88ac866d5454f255a397af2719dc49314b1a6073b2062b365
@@ -173,4 +188,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.1.0/omero-0.1.0.tgz
     version: 0.1.0
-generated: "2023-08-31T00:33:52.823229267Z"
+generated: "2023-09-04T00:33:56.945696168Z"
