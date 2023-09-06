@@ -14,7 +14,9 @@ spec:
     requests:
       storage: {{ $p.size }}
   {{ include "mirc-ctp.storage.class" (dict "storage" $p "global" $.Values.global) }}
+{{- if .selectorLabels }}
   selector:
     {{- .selectorLabels |toYaml |nindent 4 }}
+{{- end }}
 {{- end }}
 {{- end }}
