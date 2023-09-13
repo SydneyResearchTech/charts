@@ -26,29 +26,28 @@ spec:
   {{- if and .Values.ingress.className (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion) }}
   ingressClassName: {{ .Values.ingress.className }}
   {{- end }}
-  {{- if .Values.ingress.tls }}
+  {{- if .Values.ingress.tls.enabled }}
   tls:
-    {{- range .Values.ingress.tls }}
     - hosts:
-        {{- range .hosts }}
-        - {{ . | quote }}
-        {{- end }}
-      secretName: {{ .secretName }}
-    {{- end }}
+        - {{ .Values.ingress.hostname }}
+      secretName: {{ .Values.ingress.tls.secretName }}
   {{- end }}
   rules:
-    {{- range .Values.ingress.hosts }}
-    - host: {{ .host | quote }}
+    - host: {{ .Values.ingress.host.name | quote }}
       http:
         paths:
-          {{- range .paths }}
-          - path: {{ .path }}
-            {{- if and .pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
-            pathType: {{ .pathType }}
+          {{- range $service,$p := .Values.ingress.host.paths }}
+          {{- if or (and (hasPrefix "omero-web" $service) (index $.Values "omero-web" "enabled")) (and (hasPrefix "omero-server" $service) (index $.Values "omero-server" "enabled")) }}
+          - path: {{ $p.path }}
+            {{- if and $p.pathType (semverCompare ">=1.18-0" $.Capabilities.KubeVersion.GitVersion) }}
+            pathType: {{ $p.pathType }}
             {{- end }}
             backend:
-            {{- if .backend }}
-              {{- .backend|toYaml|nindent 14 }}
+            {{- if $p.backend }}
+              service:
+                name: {{ printf "%s-%s" $.Chart.Name $service }}
+                port:
+                  number: {{ $p.backend.service.port.number }}
             {{- else }}
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
               service:
@@ -61,5 +60,5 @@ spec:
               {{- end }}
             {{- end }}
           {{- end }}
-    {{- end }}
+          {{- end }}
 {{- end }}

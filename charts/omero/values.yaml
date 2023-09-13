@@ -314,34 +314,6 @@ omero-web:
       type: ClusterIP
       port: 8080
 
-  ingress:
-    enabled: false
-    className: ""
-    annotations: {}
-      # kubernetes.io/ingress.class: nginx
-      # kubernetes.io/tls-acme: "true"
-    hosts:
-      - host: chart-example.local
-        paths:
-          - path: /
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: omero-web-hl
-                port:
-                  number: 4080
-          - path: /static/
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: omero-web-static-hl
-                port:
-                  number: 8080
-    tls: []
-    #  - secretName: chart-example-tls
-    #    hosts:
-    #      - chart-example.local
-
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -371,6 +343,7 @@ service:
   type: ClusterIP
   port: 4080
 
+## @section ingress parameters
 ingress:
   enabled: false
   className: ""
@@ -378,31 +351,34 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
     # nginx.ingress.kubernetes.io/proxy-read-timeout: "86400"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: omero-web
-              port:
-                number: 4080
-        - path: /static/
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: omero-web-static
-              port:
-                number: 8080
-        - path: /omero-wss/
-          pathType: ImplementationSpecific
-          backend:
-            service:
-              name: omero-server-websocket
-              port:
-                number: 4066
-  tls: []
+  host:
+    name: chart-example.local
+    paths:
+      omero-web:
+        path: /
+        pathType: Prefix
+        backend:
+          service:
+            port:
+              number: 4080
+      omero-web-static:
+        path: /static/
+        pathType: Prefix
+        backend:
+          service:
+            port:
+              number: 8080
+      omero-server-websocket:
+        path: /omero-wss/
+        pathType: Prefix
+        backend:
+          service:
+            port:
+              number: 4066
+  tls:
+    enabled: false
+    secretName: omero-ingress-tls
+  #tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
