@@ -59,6 +59,36 @@ entries:
   omero:
   - apiVersion: v2
     appVersion: 5.6.5
+    created: "2023-09-13T23:05:35.731473611Z"
+    dependencies:
+    - condition: omero-server.enabled
+      name: omero-server
+      repository: ""
+      version: '>=0.1.0'
+    - condition: omero-web.enabled
+      name: omero-web
+      repository: ""
+      version: '>=0.1.0'
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: ~11.6.6
+    description: Open Microscopy Environment OMERO for Scientists
+    digest: 9f12f93aa7548bdcbade32f915d9d3602633824fe2201040a81a55db1b229f4a
+    home: https://www.openmicroscopy.org/omero/
+    maintainers:
+    - email: dean.taylor@sydney.edu.au
+      name: dean-taylor
+      url: https://au.linkedin.com/in/dean-taylor-a8699238
+    name: omero
+    sources:
+    - https://github.com/SydneyResearchTech/charts
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.2.1/omero-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 5.6.5
     created: "2023-09-13T08:31:18.093674371Z"
     dependencies:
     - condition: omero-server.enabled
@@ -233,4 +263,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.1.0/omero-0.1.0.tgz
     version: 0.1.0
-generated: "2023-09-13T08:31:18.093781271Z"
+generated: "2023-09-13T23:05:35.731503312Z"
