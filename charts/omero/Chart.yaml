@@ -3,7 +3,7 @@ name: omero
 description: Open Microscopy Environment OMERO for Scientists
 home: https://www.openmicroscopy.org/omero/
 maintainers:
-  - name: Dean Taylor
+  - name: dean-taylor
     email: dean.taylor@sydney.edu.au
     url: https://au.linkedin.com/in/dean-taylor-a8699238
 deprecated: false
@@ -22,7 +22,7 @@ type: application
 # This is the chart version. This version number should be incremented each time you make changes
 # to the chart and its templates, including the app version.
 # Versions are expected to follow Semantic Versioning (https://semver.org/)
-version: 0.2.1
+version: 0.2.2
 
 # This is the version number of the application being deployed. This version number should be
 # incremented each time you make changes to the application. Versions are not expected to
@@ -43,11 +43,6 @@ dependencies:
     condition: postgresql.enabled
     repository: "https://charts.bitnami.com/bitnami"
     version: "~11.6.6"
-
-maintainers:
-  - name: dean-taylor
-    email: dean.taylor@sydney.edu.au
-    url: https://au.linkedin.com/in/dean-taylor-a8699238
 
 sources:
   - https://github.com/SydneyResearchTech/charts

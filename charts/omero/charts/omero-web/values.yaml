@@ -104,15 +104,15 @@ omeroWeb:
 omero:
   web:
     admins: []
-    #application_server:
-      # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#omero-web-application-server
-    #  type: "wsgi-tcp"
-    #  host: "127.0.0.1"
-    #  max_requests: 0
-    #  port: "4080"
+    # application_server:
+    #   # https://docs.openmicroscopy.org/omero/5.6.4/sysadmins/config.html#omero-web-application-server
+    #   type: "wsgi-tcp"
+    #   host: "127.0.0.1"
+    #   max_requests: 0
+    #   port: "4080"
     apps: []
-    #  - omero_oauth
-    #base_include_template: None
+    #   - omero_oauth
+    # base_include_template: None
     caches: '{"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}'
     chunk_size: 1048576
     cors_origin_allow_all: false
@@ -122,24 +122,24 @@ omero:
     databases: {}
     debug: false
     django_additional_settings: []
-    #feedback:
-    #  comment:
-    #    enabled: true
-    #  error:
-    #    enabled: true
-    #html_meta_referrer: origin-when-crossorigin
-    #index_template: ""
+    # feedback:
+    #   comment:
+    #     enabled: true
+    #   error:
+    #     enabled: true
+    # html_meta_referrer: origin-when-crossorigin
+    # index_template: ""
     logdir: /opt/omero/web/OMERO.web/var/log
-    #login:
-    #  client_downloads_base: ome/omero-insight
-    #  show_client_downloads: true
-    #  login_incorrect_credentials_text: Connection not available, please check your user name and password.
-    # login_logo: ""
-    #login_redirect: {}
-    #login_view: weblogin
-    #maximum_multifile_download_size: 1073741824
-    # middleware: |
-    #nginx_server_extra_config: []
+    # login:
+    #   client_downloads_base: ome/omero-insight
+    #   show_client_downloads: true
+    #   login_incorrect_credentials_text: Connection not available, please check your user name and password.
+    #  login_logo: ""
+    # login_redirect: {}
+    # login_view: weblogin
+    # maximum_multifile_download_size: 1073741824
+    #   middleware: |
+    # nginx_server_extra_config: []
     open_with: [["Image viewer", "webgateway", {"supported_objects": ["image"], "script_url": "webclient/javascript/ome.openwith_viewer.js"}]]
     # https://gitlab.com/openmicroscopy/incubator/omero-oauth
     # oauth:
@@ -186,61 +186,61 @@ omero:
     #       email: '{email}'
     #       firstname: '{given_name}'
     #       lastname: '{family_name}'
-    #page_size: 200
-    #ping_interval: 60000
-    #pipeline_css_compressor: ""
-    #pipeline_js_compressor: ""
-    #pipeline_staticfile_storage: pipeline.storage.PipelineStorage
-    #prefix: ""
-    #public:
-    #  cache:
-    #    enabled: false
-    #    key: omero.web.public.cache.key
-    #    timeout: 86400
-    #  enabled: false
-    #  get_only: true
-    #  password: None
-    #  server_id: 1
-    #  url_filter: (?#This regular expression matches nothing)a^
-    #  user: None
-    #redirect_allowed_hosts: []
-    #root_application: ""
+    # page_size: 200
+    # ping_interval: 60000
+    # pipeline_css_compressor: ""
+    # pipeline_js_compressor: ""
+    # pipeline_staticfile_storage: pipeline.storage.PipelineStorage
+    # prefix: ""
+    # public:
+    #   cache:
+    #     enabled: false
+    #     key: omero.web.public.cache.key
+    #     timeout: 86400
+    #   enabled: false
+    #   get_only: true
+    #   password: None
+    #   server_id: 1
+    #   url_filter: (?#This regular expression matches nothing)a^
+    #   user: None
+    # redirect_allowed_hosts: []
+    # root_application: ""
     # https://docs.djangoproject.com/en/4.2/ref/settings/#secret-key
     secret_key: ""
     secure: false
     secure_proxy_ssl_header: []
     # server_list: [["localhost", 4064, "omero"]]
-    #session_cookie_age: 86400
-    #session_cookie_domain: None
-    #session_cookie_name: None
-    #session_cookie_path: None
-    #session_cookie_secure: false
-    #session_engine: 'omeroweb.filesessionstore'     # https://docs.djangoproject.com/en/1.11/ref/settings/#session-engine
-    #session_expire_at_browser_close: true
-    #sharing:
-    #  opengraph: {}     # '{"omero": "@openmicroscopy"}'
+    # session_cookie_age: 86400
+    # session_cookie_domain: None
+    # session_cookie_name: None
+    # session_cookie_path: None
+    # session_cookie_secure: false
+    # session_engine: 'omeroweb.filesessionstore'     # https://docs.djangoproject.com/en/1.11/ref/settings/#session-engine
+    # session_expire_at_browser_close: true
+    # sharing:
+    #   opengraph: {}     # '{"omero": "@openmicroscopy"}'
     static_root: "/opt/omero/web/OMERO.web/var/static"
     static_url: "/static/"
-    #staticfile_dirs: []
-    #template_dirs: []
-    #thumbnails_batch: 50
+    # staticfile_dirs: []
+    # template_dirs: []
+    # thumbnails_batch: 50
     time_zone: "Australia/Sydney"
-    #top_logo: ""
-    #top_logo_link: ""
-    #ui:
-    #  center_plugins: []
-      # metadata_panes:
-      # right_plugins:
-      # top_links:
+    # top_logo: ""
+    # top_logo_link: ""
+    # ui:
+    #   center_plugins: []
+    #   metadata_panes:
+    #   right_plugins:
+    #   top_links:
     use_x_forwarded_host: true
-    #user_dropdown: true
-    #viewer:
-    #  view: omeroweb.webclient.views.image_viewer
+    # user_dropdown: true
+    # viewer:
+    #   view: omeroweb.webclient.views.image_viewer
     # webgateway_cache: None
     wsgi_args: "--access-logfile - --error-logfile - --worker-tmp-dir /dev/shm"
     wsgi_timeout: 60
     wsgi_workers: 5  # (2*${CPU})+1
-    #x_frame_options: SAMEORIGIN
+    # x_frame_options: SAMEORIGIN
 
 replicaCount: 1
 
