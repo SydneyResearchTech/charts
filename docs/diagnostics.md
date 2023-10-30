@@ -1,5 +1,36 @@
 # charts/docs/diagnostics.md
 
+## Network
+
+### IPerf3
+
+Authentication - RSA Keypair
+
+```bash
+TDIR=$(mktemp -d)
+
+openssl genrsa -des3 -out ${TDIR}/private.pem 2048
+openssl rsa -in ${TDIR}/private.pem -outform PEM -pubout -out ${TDIR}/public.pem
+openssl rsa -in ${TDIR}/private.pem -out ${TDIR}/private_not_protected.pem -outform PEM
+
+kubectl create secret tls iperf3-tls \
+--cert=${TDIR}/public.pem \
+--key=${TDIR}/private_not_protected.pem
+
+rm -fr "${TDIR}" 
+```
+
+Authentication - Authorized users configuration file
+
+```bash
+PASSWORD=$(uuidgen)
+
+kubectl create secret generic iperf3-auth \
+--from-literal=iperf3-client,$(echo -n "iperf3-client${PASSWORD}" |sha256sum |awk '{print $1}')
+```
+
+Create server deployment and service
+
 ```bash
 IPERF_PORT="5201"
 
@@ -47,13 +78,15 @@ spec:
       targetPort: $IPERF_PORT
 EOT
 
+
+# View server logs
 kubectl logs deployment.apps/iperf3-server
 
-kubectl port-forward service/iperf3-server 5201:5201
-kubectl port-forward pod/iperf3-server-69d6b48fff-kk472 5201:5201
-
+# Cleanup
 kubectl delete deployment.apps/iperf3-server
 kubectl delete service/iperf3-server
+
+# Create IPerf3 client deployment
 
 cat <<EOT |kubectl apply -f -
 apiVersion: apps/v1
@@ -80,8 +113,8 @@ spec:
         command: ["iperf3"]
         args:
         - --client $IPERF_SERVER
-        - --connect-timeout 600
         - --zerocopy
-        - --debug
+        - --username iperf3-client
+        - --rsa-public-key-path ""
 EOT
 ```
