@@ -29,7 +29,6 @@ spec:
         args:
         - -p $IPERF_PORT
         - --server
-        - --forceflush
         - --debug
         ports:
         - containerPort: $IPERF_PORT
