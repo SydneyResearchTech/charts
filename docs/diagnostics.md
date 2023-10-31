@@ -26,7 +26,7 @@ Authentication - Authorized users configuration file
 PASSWORD=$(uuidgen)
 
 kubectl create secret generic iperf3-auth \
---from-literal=iperf3-client,$(echo -n "iperf3-client${PASSWORD}" |sha256sum |awk '{print $1}')
+--from-literal=iperf3-client=$(echo -n "iperf3-client${PASSWORD}" |sha256sum |awk '{print $1}')
 ```
 
 Create server deployment and service
