@@ -68,6 +68,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: iperf3-server
+  annotations: {}
+  #  service.beta.kubernetes.io/load-balancer-source-ranges: 129.78.0.0/16,203.32.106.0/24,203.32.107.0/24,220.235.127.71/32
 spec:
   selector:
     app.kubernetes.io/name: iperf3-server
@@ -76,6 +78,11 @@ spec:
     - protocol: TCP
       port: $IPERF_PORT
       targetPort: $IPERF_PORT
+  loadBalancerSourceRanges:
+  - 129.78.0.0/16
+  - 203.32.106.0/24
+  - 203.32.107.0/24
+  - 220.235.127.71/32
 EOT
 
 
