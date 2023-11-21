@@ -1,0 +1,5 @@
+/build.sh
+/log-*
+/.*
+.*.swp
+/tmp/
