@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cryosparcm.fullname" . }}
+  labels:
+    {{- include "cryosparcm.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+    {{- range $i,$v := until 9 }}
+    - port: {{ add $.Values.service.port (add $i 1) }}
+      targetPort: http-{{ add $i 2 }}
+      protocol: TCP
+      name: http-{{ add $i 2 }}
+    {{- end }}
+  selector:
+    {{- include "cryosparcm.selectorLabels" . | nindent 4 }}

@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "cryosparcm.fullname" . }}
+  labels:
+    {{- include "cryosparcm.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "cryosparcm.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "cryosparcm.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "cryosparcm.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["cryosparcm","start"]
+          ports:
+            - name: http
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            {{- range $i,$v := until 9 }}
+            - name: http-{{ add $i 2 }}
+              containerPort: {{ add $.Values.service.port (add $i 1) }}
+              protocol: TCP
+            {{- end }}
+          #livenessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          #readinessProbe:
+          #  httpGet:
+          #    path: /
+          #    port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /cryosparc_master/run
+              name: cryosparc-run
+            - mountPath: /cryosparc_database
+              name: cryosparc-mongodb
+            - mountPath: /cryosparc_home
+              name: cryosparc-home
+            - mountPath: /etc/passwd
+              name: cryosparc-passwd
+              readOnly: true
+              subPath: passwd
+            - mountPath: /etc/group
+              name: cryosparc-group
+              readOnly: true
+              subPath: group
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: cryosparc-run
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cryosparc-home
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cryosparc-mongodb
+          persistentVolumeClaim:
+            claimName: {{ include "cryosparcm.fullname" . }}-mongodb
+        - name: cryosparc-passwd
+          configMap:
+            name: {{ include "cryosparcm.fullname" . }}
+            items:
+              - key: passwd
+                path: passwd
+        - name: cryosparc-group
+          configMap:
+            name: {{ include "cryosparcm.fullname" . }}
+            items:
+              - key: group
+                path: group

@@ -1,0 +1,12 @@
+# Default values for cryosparc.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+cryosparcm:
+  enabled: true
+
+cryosparcw:
+  enabled: true
+
+mongodb:
+  enabled: true
