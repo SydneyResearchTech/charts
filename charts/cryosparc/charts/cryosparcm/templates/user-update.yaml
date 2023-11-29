@@ -1,0 +1,55 @@
+{{- if .Values.manage_users -}}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "cryosparcm.fullname" . }}-user-sync
+  labels:
+    {{- include "cryosparcm.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ include "cryosparcm.fullname" . }}-user-sync
+      labels:
+        {{- include "cryosparcm.labels" . | nindent 8 }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-user-sync
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/bin/bash","-c"]
+          args:
+            - |
+              CRYOSPARC_API={{ include "cryosparc.api" . |quote }}
+              eval $(/cryosparc_master/bin/cryosparcm env)
+              until [[ $(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS ${CRYOSPARC_API}) == 200 ]]; do
+                sleep 1
+              done
+              while IFS='|' read -r EMPTY EMAIL USERNAME FIRSTNAME LASTNAME PASSWORD; do
+                cryosparcm createuser \
+                  --email "${EMAIL}" \
+                  --username "${USERNAME}" \
+                  --firstname "${FIRSTNAME}" \
+                  --lastname "${LASTNAME}" \
+                  --password "${PASSWORD}"
+              done </k8s-secrets/users
+          volumeMounts:
+            {{- include "cryosparcm.volumeMounts" . |nindent 12 }}
+            - mountPath: /k8s-secrets
+              name: users
+      restartPolicy: Never
+      volumes:
+        {{- include "cryosparcm.volumes" . |nindent 8 }}
+        - name: users
+          secret:
+            secretName: {{ include "cryosparcm.fullname" . }}
+            items: [{key: users, path: users}]
+  backoffLimit: 4
+{{- end }}

@@ -36,13 +36,23 @@ spec:
           args: ["cryosparcm","start"]
           ports:
             - name: http
-              containerPort: {{ .Values.service.port }}
+              containerPort: 39000
               protocol: TCP
-            {{- range $i,$v := until 9 }}
-            - name: http-{{ add $i 2 }}
-              containerPort: {{ add $.Values.service.port (add $i 1) }}
+            - name: mongodb
+              containerPort: 39001
               protocol: TCP
-            {{- end }}
+            - name: core
+              containerPort: 39002
+              protocol: TCP
+            - name: vis
+              containerPort: 39003
+              protocol: TCP
+            - name: rtp
+              containerPort: 39005
+              protocol: TCP
+            - name: api
+              containerPort: 39006
+              protocol: TCP
           #livenessProbe:
           #  httpGet:
           #    path: /
@@ -54,20 +64,45 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            {{- include "cryosparcm.volumeMounts" . |nindent 12 }}
             - mountPath: /cryosparc_master/run
               name: cryosparc-run
             - mountPath: /cryosparc_database
               name: cryosparc-mongodb
-            - mountPath: /cryosparc_home
+            - mountPath: /home/cryosparc
               name: cryosparc-home
-            - mountPath: /etc/passwd
-              name: cryosparc-passwd
+        {{- range .Values.logs }}
+        - name: log-{{ . |replace "_" "-" }}
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: busybox
+          command: ["sh","-c"]
+          args:
+            - |
+              exec tail -F -n1000 /cryosparc_master/run/{{ . }}.log
+          volumeMounts:
+            - mountPath: /cryosparc_master/run
+              name: cryosparc-run
               readOnly: true
-              subPath: passwd
-            - mountPath: /etc/group
-              name: cryosparc-group
+        {{- end }}
+      initContainers:
+        - name: init-cryosparcuser
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: busybox
+          command: ["sh","-c"]
+          args:
+            - |
+              HOME="/home/cryosparc"
+              SSH_KEY="/k8s-secrets/id.key"
+              [ -d ${HOME}/.ssh ] || { mkdir -p ${HOME}/.ssh; chmod 0700 ${HOME}/.ssh; }
+              [ -f ${HOME}/.ssh/id_ed25519 ] || { cp $SSH_KEY ${HOME}/.ssh/id_ed25519; chmod 0400 ${HOME}/.ssh/id_ed25519; }
+          volumeMounts:
+            - mountPath: /home/cryosparc
+              name: cryosparc-home
+            - mountPath: /k8s-secrets/
+              name: cryosparc-ssh
               readOnly: true
-              subPath: group
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -81,6 +116,7 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
+        {{- include "cryosparcm.volumes" . |nindent 8 }}
         - name: cryosparc-run
           emptyDir:
             sizeLimit: 500Mi
@@ -90,15 +126,9 @@ spec:
         - name: cryosparc-mongodb
           persistentVolumeClaim:
             claimName: {{ include "cryosparcm.fullname" . }}-mongodb
-        - name: cryosparc-passwd
-          configMap:
-            name: {{ include "cryosparcm.fullname" . }}
+        - name: cryosparc-ssh
+          secret:
+            secretName: {{ .Values.ssh_secret.name }}
             items:
-              - key: passwd
-                path: passwd
-        - name: cryosparc-group
-          configMap:
-            name: {{ include "cryosparcm.fullname" . }}
-            items:
-              - key: group
-                path: group
+              - key: {{ .Values.ssh_secret.key }}
+                path: id.key

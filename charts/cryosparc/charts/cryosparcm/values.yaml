@@ -2,6 +2,15 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+users:
+  - {email: 'admin@sydney.edu.au', username: 'admin', firstname: 'Admin', lastname: 'User', password: 'password'}
+manage_users: false
+
+license_id: ""
+master_hostname: ""
+base_port: "39000"
+
+
 logs: [app,app_api,command_core,command_rtp,command_vis,database,supervisord]
 mongodb:
   command: >
@@ -15,12 +24,19 @@ mongodb:
 
 command_core:
   command: python -c "import cryosparc_command.command_core as serv; serv.start(port=${CRYOSPARC_COMMAND_CORE_PORT})"
+  service:
+    type: ClusterIP
+    port: 39002
 
 command_vis:
   command: python -c "import cryosparc_command.command_vis as serv; serv.start(port=${CRYOSPARC_COMMAND_VIS_PORT})"
 
 command_rtp:
   command: python -c "import cryosparc_command.command_rtp as serv; serv.start(port=${CRYOSPARC_COMMAND_RTP_PORT})"
+
+ssh_secret:
+  name: "cryosparc-user"
+  key: "ssh-privatekey"
 
 replicaCount: 1
 

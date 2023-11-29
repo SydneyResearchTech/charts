@@ -1,4 +1,36 @@
 {{/*
+CryoSPARC Master container volumes
+*/}}
+{{- define "cryosparcm.volumeMounts" -}}
+- mountPath: /cryosparc_master/config.sh
+  name: config-sh
+  readOnly: true
+  subPath: config.sh
+- mountPath: /etc/passwd
+  name: cryosparc-passwd
+  readOnly: true
+  subPath: passwd
+- mountPath: /etc/group
+  name: cryosparc-group
+  readOnly: true
+  subPath: group
+{{- end }}
+{{- define "cryosparcm.volumes" -}}
+- name: config-sh
+  secret:
+    secretName: {{ include "cryosparcm.fullname" . }}
+    items: [{key: config.sh, path: config.sh}]
+- name: cryosparc-passwd
+  configMap:
+    name: {{ include "cryosparcm.fullname" . }}
+    items: [{key: passwd, path: passwd}]
+- name: cryosparc-group
+  configMap:
+    name: {{ include "cryosparcm.fullname" . }}
+    items: [{key: group, path: group}]
+{{- end }}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "cryosparcm.name" -}}

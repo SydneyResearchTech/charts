@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+eval $(/cryosparc_worker/bin/cryosparcw env)
+[[ -z $CRYOSPARCW_SSHD_PORT ]] && CRYOSPARCW_SSHD_PORT="2222"
+
 CMD=""
 if [[ "$1" == *cryosparcw ]]; then
 	CMD="/cryosparc_worker/bin/cryosparcw ${@:2}"
@@ -16,10 +19,10 @@ if [[ "$1" == *cryosparcw ]]; then
 		[[ -z $CRYOSPARC_SSDRESERVE ]] || CMD="$CMD --ssdreserve $CRYOSPARC_SSDRESERVE"
 		[[ -z $CRYOSPARC_LANE ]]       || CMD="$CMD --lane $CRYOSPARC_LANE"
 		[[ -z $CRYOSPARC_NEWLANE ]]    || CMD="$CMD --newlane"
-	fi
 
-	echo $CMD
-	exec $CMD
+                $CMD
+		exec /usr/sbin/dropbear -R -F -E -m -s -j -k -p $CRYOSPARCW_SSHD_PORT
+	fi
 fi
 
 exec $@
