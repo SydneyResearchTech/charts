@@ -1,12 +1,34 @@
-# cryosparc/README.md
+# build/cryosparc/cryosparc-master/README.md
+
+## SSH key generation
 
 ```bash
-docker buildx b -t cryosparc-master:0.1.0 .
+TMPDIR=$(mktemp -d)
+
+ssh-keygen -C 'cryosparc@master' -f ${TMPDIR}/id_ed25519 -N '' -t ed25519
+
+kubectl create secret generic cryosparc-user \
+--from-file=ssh-privatekey=${TMPDIR}/id_ed25519 \
+--from-file=ssh-publickey=${TMPDIR}/id_ed25519.pub
+
+rm -rf $TMPDIR
 ```
 
 ## Volumes
-* /cryosparc_master/run/ - log and pid files
-* /cryosparc_database/ - MongoDB files
+| Path | Description |
+| ---- | ----------- |
+| /cryosparc_master/run/ | log and pid files |
+| /cryosparc_database/   | MongoDB files |
+| /home/cryosparc/       | cryosparc user runtime files |
+
+## Docker run
+
+```bash
+docker run -u 1001 --name cryosparcm --rm \
+  localhost:32000/cryosparc-master:0.1.0
+```
+
+## Notes during development
 
 Modified files and volumes
 
@@ -40,7 +62,6 @@ cryosparcm start
 > /cryosparc_master/run/supervisord.log
 > /cryosparc_master/run/supervisord.pid
 > /cryosparc_master/run/command_core.log
-
 ```
 
 ```
@@ -52,9 +73,12 @@ command_core
 command_rtp
 command_vis
 database
+
+cryosparcm configuredb
 ```
 
-## Logs
+Logs
+```
 command_core 
 command_rtp
 command_vis 
@@ -62,6 +86,7 @@ database
 app
 app_legacy
 app_api
+```
 
 ## ISSUES
 

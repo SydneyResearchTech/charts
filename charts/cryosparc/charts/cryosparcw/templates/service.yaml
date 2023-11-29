@@ -8,8 +8,8 @@ spec:
   type: {{ .Values.service.type }}
   ports:
     - port: {{ .Values.service.port }}
-      targetPort: http
+      targetPort: sshd
       protocol: TCP
-      name: http
+      name: sshd
   selector:
     {{- include "cryosparcw.selectorLabels" . | nindent 4 }}

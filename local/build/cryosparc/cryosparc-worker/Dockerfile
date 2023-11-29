@@ -15,6 +15,16 @@ EOT
 RUN <<EOT
   cd /cryosparc_worker
   ./install.sh --license ${LICENSE_ID} --yes
+  echo 'eval $(/cryosparc_worker/bin/cryosparcw env)' >>/etc/bash.bashrc
+  rm -rf /var/lib/apt/lists/*
+EOT
+
+RUN <<EOT
+  apt-get update
+  apt-get -y install \
+    dropbear
+  rm -rf /var/lib/apt/lists/*
+  useradd -c 'CryoSPARC user' -m -s /bin/sh cryosparc
 EOT
 
 COPY ./ /

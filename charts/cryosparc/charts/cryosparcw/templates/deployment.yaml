@@ -33,20 +33,72 @@ spec:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args: ["cryosparcw","connect"]
+          env:
+            - {name: CRYOSPARC_HOSTNAME, value: {{ .Values.hostname |quote }}}
+            - {name: CRYOSPARC_MASTER, value: {{ .Values.master |quote }}}
+            - {name: CRYOSPARC_PORT, value: {{ .Values.port |quote }}}
+            - {name: CRYOSPARC_SSDPATH, value: {{ .Values.ssd_path |quote }}}
+            - {name: CRYOSPARC_UPDATE, value: {{ ternary "true" "" .Values.update |quote }}}
+            - {name: CRYOSPARC_SSHSTR, value: {{ .Values.ssh_string |quote }}}
+            - {name: CRYOSPARC_CPUS, value: {{ gt (int .Values.cpus) 0 |ternary .Values.cpus "" |quote }}}
+            - {name: CRYOSPARC_NOGPU, value: {{ ternary "true" "" .Values.nogpu |quote }}}
+            - {name: CRYOSPARC_GPUS, value: {{ .Values.gpus |quote }}}
+            - {name: CRYOSPARC_SSDQUOTA, value: {{ gt (int .Values.ssd_quota) 0 |ternary .Values.ssd_quota "" |quote }}}
+            - {name: CRYOSPARC_SSDRESERVE, value: {{ gt (int .Values.ssd_reseved) 0 |ternary .Values.ssd_reseved "" |quote }}}
+            - {name: CRYOSPARC_LANE, value: {{ .Values.lane |quote }}}
+            - {name: CRYOSPARC_NEWLANE, value: {{ ternary "true" "" .Values.new_lane |quote }}}
           ports:
-            - name: http
-              containerPort: 80
+            - name: sshd
+              containerPort: 2222
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: sshd
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
+            tcpSocket:
+              port: sshd
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: cryosparc-home
+              mountPath: /home/cryosparc
+            - mountPath: /etc/passwd
+              name: cryosparc-passwd
+              readOnly: true
+              subPath: passwd
+            - mountPath: /etc/group
+              name: cryosparc-group
+              readOnly: true
+              subPath: group
+      initContainers:
+        - name: init
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: alpine
+          command: ["sh","-c"]
+          args:
+            - |
+              HOME="/home/cryosparc"
+              AUTHORIZED_KEYS="${HOME}/.ssh/authorized_keys"
+              SSH_PUB="/k8s-secrets/ssh/id.pub"
+              CRYOSPARC_API={{ include "cryosparc.api" . |quote }}
+              TIMEOUT=20
+              echo 'cryosparc user setup'
+              [ -d ${HOME}/.ssh ] || { mkdir -p ${HOME}/.ssh; chmod 0700 ${HOME}/.ssh; }
+              [ -f $AUTHORIZED_KEYS ] || { cat $SSH_PUB >$AUTHORIZED_KEYS; chmod 0400 $AUTHORIZED_KEYS; }
+              echo 'cryosparc master, wait for API'
+              until `wget -O/dev/null -q --content-on-error=off --method=OPTIONS --server-response ${CRYOSPARC_API} |grep -q 'HTTP/1.0 200 OK'`; do
+                [ $TIMEOUT -le 0 ] && break
+                let "TIMEOUT=TIMEOUT-1"
+                sleep 1
+              done
+          volumeMounts:
+            - name: cryosparc-home
+              mountPath: /home/cryosparc
+            - name: secrets
+              mountPath: /k8s-secrets
+              readOnly: true
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -59,3 +111,21 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: cryosparc-home
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: cryosparc-passwd
+          configMap:
+            name: {{ include "cryosparcw.fullname" . }}
+            items: [{key: passwd, path: passwd}]
+        - name: cryosparc-group
+          configMap:
+            name: {{ include "cryosparcw.fullname" . }}
+            items: [{key: group, path: group}]
+        - name: secrets
+          secret:
+            secretName: {{ .Values.ssh_secret.name }}
+            items:
+              - key: {{ .Values.ssh_secret.key }}
+                path: ssh/id.pub

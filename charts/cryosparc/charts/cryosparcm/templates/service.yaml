@@ -11,11 +11,25 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
-    {{- range $i,$v := until 9 }}
-    - port: {{ add $.Values.service.port (add $i 1) }}
-      targetPort: http-{{ add $i 2 }}
+    - port: {{ add $.Values.service.port 1 }}
+      targetPort: mongodb
       protocol: TCP
-      name: http-{{ add $i 2 }}
-    {{- end }}
+      name: mongodb
+    - port: {{ add $.Values.service.port 2 }}
+      targetPort: core
+      protocol: TCP
+      name: core
+    - port: {{ add $.Values.service.port 3 }}
+      targetPort: vis
+      protocol: TCP
+      name: vis
+    - port: {{ add $.Values.service.port 5 }}
+      targetPort: rtp
+      protocol: TCP
+      name: rtp
+    - port: {{ add $.Values.service.port 6 }}
+      targetPort: api
+      protocol: TCP
+      name: api
   selector:
     {{- include "cryosparcm.selectorLabels" . | nindent 4 }}

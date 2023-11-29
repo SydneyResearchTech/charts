@@ -1,4 +1,12 @@
 {{/*
+CryoSPARC Master API service name
+http://{{ .Chart.Name }}-cryosparcm-command-core:39002/api
+*/}}
+{{- define "cryosparc.api" -}}
+http://{{ .Chart.Name }}-cryosparcm:39002/api
+{{- end }}
+
+{{/*
 Expand the name of the chart.
 */}}
 {{- define "cryosparc.name" -}}
