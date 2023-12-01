@@ -1,9 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "cryosparcm.fullname" . }}
+  name: {{ include "cryosparc.fullname" . }}
   labels:
-    {{- include "cryosparcm.labels" . | nindent 4 }}
+    {{- include "cryosparc.labels" . | nindent 4 }}
 data:
   passwd: |
     root:x:0:0:root:/root:/bin/bash

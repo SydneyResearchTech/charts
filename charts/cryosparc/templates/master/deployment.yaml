@@ -1,38 +1,38 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "cryosparcm.fullname" . }}
+  name: {{ include "cryosparc.fullname" . }}
   labels:
-    {{- include "cryosparcm.labels" . | nindent 4 }}
+    {{- include "cryosparc.labels" . | nindent 4 }}
 spec:
-  {{- if not .Values.autoscaling.enabled }}
-  replicas: {{ .Values.replicaCount }}
+  {{- if not .Values.master.autoscaling.enabled }}
+  replicas: {{ .Values.master.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "cryosparcm.selectorLabels" . | nindent 6 }}
+      {{- include "cryosparc.selectorLabels" . | nindent 6 }}
   template:
     metadata:
-      {{- with .Values.podAnnotations }}
+      {{- with .Values.master.podAnnotations }}
       annotations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "cryosparcm.selectorLabels" . | nindent 8 }}
+        {{- include "cryosparc.selectorLabels" . | nindent 8 }}
     spec:
-      {{- with .Values.imagePullSecrets }}
+      {{- with .Values.master.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "cryosparcm.serviceAccountName" . }}
+      serviceAccountName: {{ include "cryosparc.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          image: "{{ .Values.master.image.repository }}:{{ .Values.master.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.master.image.pullPolicy }}
           args: ["cryosparcm","start"]
           ports:
             - name: http
@@ -62,20 +62,20 @@ spec:
           #    path: /
           #    port: http
           resources:
-            {{- toYaml .Values.resources | nindent 12 }}
+            {{- toYaml .Values.master.resources | nindent 12 }}
           volumeMounts:
-            {{- include "cryosparcm.volumeMounts" . |nindent 12 }}
+            {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}
             - mountPath: /cryosparc_master/run
               name: cryosparc-run
             - mountPath: /cryosparc_database
               name: cryosparc-mongodb
             - mountPath: /home/cryosparc
               name: cryosparc-home
-            {{- range .Values.global.cryosparc.volumes }}
+            {{- range .Values.volumes }}
             - mountPath: {{ .path }}
-              name: {{ .name }}
+              name: cryosparc-{{ .name }}
             {{- end }}
-        {{- range .Values.logs }}
+        {{- range .Values.master.logs }}
         - name: log-{{ . |replace "_" "-" }}
           securityContext:
             {{- toYaml $.Values.securityContext | nindent 12 }}
@@ -107,20 +107,20 @@ spec:
             - mountPath: /k8s-secrets/
               name: cryosparc-ssh
               readOnly: true
-      {{- with .Values.nodeSelector }}
+      {{- with .Values.master.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.affinity }}
+      {{- with .Values.master.affinity }}
       affinity:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      {{- with .Values.tolerations }}
+      {{- with .Values.master.tolerations }}
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- include "cryosparcm.volumes" . |nindent 8 }}
+        {{- include "cryosparc.master.volumes" . |nindent 8 }}
         - name: cryosparc-run
           emptyDir:
             sizeLimit: 500Mi
@@ -129,15 +129,15 @@ spec:
             sizeLimit: 500Mi
         - name: cryosparc-mongodb
           persistentVolumeClaim:
-            claimName: {{ include "cryosparcm.fullname" . }}-mongodb
+            claimName: {{ include "cryosparc.fullname" . }}-mongodb
         - name: cryosparc-ssh
           secret:
             secretName: {{ .Values.ssh_secret.name }}
             items:
               - key: {{ .Values.ssh_secret.key }}
                 path: id.key
-        {{- range .Values.global.cryosparc.volumes }}
-        - name: {{ .name }}
+        {{- range .Values.volumes }}
+        - name: cryosparc-{{ .name }}
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
         {{- end }}
