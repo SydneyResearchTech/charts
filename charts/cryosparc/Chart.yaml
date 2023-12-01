@@ -24,12 +24,6 @@ version: 0.1.0
 appVersion: 4.4.0
 
 dependencies:
-  - name: cryosparcm
-    version: ">=0.1.0"
-    condition: cryosparcm.enabled
-  - name: cryosparcw
-    version: ">=0.1.0"
-    condition: cryosparcw.enabled
   #- name: mongodb
   #  version: >=0.1.0
   #  condition: mongodb.enabled

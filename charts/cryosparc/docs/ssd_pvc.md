@@ -18,6 +18,8 @@ EOT
 ```yaml
 UUID=$(uuidgen |tr '[:upper:]' '[:lower:]'); UUID=${UUID##*-}; echo $UUID
 
+sudo mkdir /scratch/cryosparc-ssd-$UUID
+
 cat <<EOT |kubectl apply -f -
 apiVersion: v1
 kind: PersistentVolume
@@ -26,14 +28,22 @@ metadata:
 spec:
   accessModes: [ReadWriteOnce]
   capacity:
-    storage: 100Gi
+    storage: 1Gi
   claimRef:
     name: cryosparc-ssd
     namespace: default
   local:
     path: /scratch/cryosparc-ssd-$UUID
-  persistentVolumeReclaimPolicy: Delete
+  persistentVolumeReclaimPolicy: Retain
   storageClassName: local-storage
   volumeMode: Filesystem
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - ip-10-0-19-23
 EOT
 ```

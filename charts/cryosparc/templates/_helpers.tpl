@@ -1,5 +1,53 @@
 {{/*
 */}}
+{{- define "cryosparc.master.service" -}}
+{{- end }}
+
+{{/*
+CryoSPARC common container volumes
+*/}}
+{{- define "cryosparc.volumeMounts" -}}
+- mountPath: /etc/passwd
+  name: cryosparc-passwd
+  readOnly: true
+  subPath: passwd
+- mountPath: /etc/group
+  name: cryosparc-group
+  readOnly: true
+  subPath: group
+{{- end }}
+{{- define "cryosparc.volumes" -}}
+- name: cryosparc-passwd
+  configMap:
+    name: {{ include "cryosparc.fullname" . }}
+    items: [{key: passwd, path: passwd}]
+- name: cryosparc-group
+  configMap:
+    name: {{ include "cryosparc.fullname" . }}
+    items: [{key: group, path: group}]
+{{- end }}
+
+{{/*
+CryoSPARC Master container volumes
+*/}}
+{{- define "cryosparc.master.volumeMounts" -}}
+- mountPath: /cryosparc_master/config.sh
+  name: config-sh
+  readOnly: true
+  subPath: config.sh
+{{ include "cryosparc.volumeMounts" . }}
+{{- end }}
+{{- define "cryosparc.master.volumes" -}}
+- name: config-sh
+  secret:
+    secretName: {{ include "cryosparc.fullname" . }}
+    items: [{key: config.sh, path: config.sh}]
+{{ include "cryosparc.volumes" . }}
+{{- end }}
+
+{{/*
+storageClassName key value helper
+*/}}
 {{- define "cryosparc.storageClassName" -}}
 {{- if or .vol.storageClassName .global.storageClassName -}}
 {{- $storageClassName := (default .global.storageClassName .vol.storageClassName) -}}
@@ -16,7 +64,7 @@ CryoSPARC Master API service name
 http://{{ .Chart.Name }}-cryosparcm-command-core:39002/api
 */}}
 {{- define "cryosparc.api" -}}
-http://{{ .Chart.Name }}-cryosparcm:39002/api
+http://{{ include "cryosparc.fullname" . }}:39002/api
 {{- end }}
 
 {{/*

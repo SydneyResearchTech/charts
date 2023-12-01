@@ -1,4 +1,24 @@
-{{- range .Values.global.cryosparc.volumes -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cryosparc.fullname" . }}-mongodb
+  labels:
+    {{- include "cryosparc.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.master.mongodb.volume }}
+  accessModes:
+    {{- .accessModes |toYaml |nindent 4 }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .size }}
+  {{- include "cryosparc.storageClassName" (dict "vol" . "global" $.Values.global) |nindent 2 }}
+  {{- if .selector }}
+  selector:
+    {{ .selector |toYaml |nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- range .Values.volumes }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -7,13 +27,15 @@ metadata:
   labels:
     {{- include "cryosparc.labels" $ | nindent 4 }}
 spec:
-  accessModes: {{ default (list "ReadWriteMany" |toJson) .accessModes }}
+  accessModes:
+    {{- default (list "ReadWriteMany") .accessModes |toYaml |nindent 4 }}
   volumeMode: Filesystem
   resources:
     requests:
       storage: {{ .size }}
   {{- include "cryosparc.storageClassName" (dict "vol" . "global" $.Values.global) |nindent 2 }}
-  {{- if .selector -}}
-  selector: {{ .selector |toJson }}
+  {{- if .selector }}
+  selector:
+    {{- default "{}" .selector |toYaml |nindent 4 }}
   {{- end }}
 {{- end }}

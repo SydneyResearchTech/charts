@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: {{ .Values.worker.workload_resource }}
+metadata:
+  name: {{ include "cryosparc.fullname" . }}w
+  labels:
+    {{- include "cryosparc.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.worker.autoscaling.enabled }}
+  replicas: {{ .Values.worker.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "cryosparc.w.selectorLabels" . | nindent 6 }}
+  {{- if eq .Values.worker.workload_resource "StatefulSet" }}
+  serviceName: {{ include "cryosparc.fullname" . }}w
+  {{- end }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "cryosparc.w.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "cryosparc.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}-w
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          args: ["cryosparcw","connect"]
+          env:
+            - {name: CRYOSPARC_LICENSE_ID, value: {{ .Values.license_id |quote }}}
+            - {name: CRYOSPARC_PORT, value: {{ .Values.base_port |quote }}}
+            {{- with .Values.worker }}
+            - {name: CRYOSPARC_HOSTNAME, value: {{ .hostname |quote }}}
+            - {name: CRYOSPARC_MASTER, value: {{ default (printf "%s%s" (include "cryosparc.fullname" $) "m") .master |quote }}}
+            - {name: CRYOSPARC_SSDPATH, value: {{ .ssd_path |quote }}}
+            - {name: CRYOSPARC_UPDATE, value: {{ ternary "true" "" .update |quote }}}
+            - {name: CRYOSPARC_SSHSTR, value: {{ .ssh_string |quote }}}
+            - {name: CRYOSPARC_CPUS, value: {{ gt (int .cpus) 0 |ternary .cpus "" |quote }}}
+            - {name: CRYOSPARC_NOGPU, value: {{ ternary "true" "" .nogpu |quote }}}
+            - {name: CRYOSPARC_GPUS, value: {{ .gpus |quote }}}
+            - {name: CRYOSPARC_SSDQUOTA, value: {{ gt (int .ssd_quota) 0 |ternary .ssd_quota "" |quote }}}
+            - {name: CRYOSPARC_SSDRESERVE, value: {{ gt (int .ssd_reseved) 0 |ternary .ssd_reseved "" |quote }}}
+            - {name: CRYOSPARC_LANE, value: {{ .lane |quote }}}
+            - {name: CRYOSPARC_NEWLANE, value: {{ ternary "true" "" .new_lane |quote }}}
+            {{- end }}
+          ports:
+            - name: sshd
+              containerPort: 2222
+              {{- if eq .Values.worker.workload_resource "DaemonSet" }}
+              hostPort: 2222
+              {{- else }}
+              protocol: TCP
+              {{- end }}
+          #livenessProbe:
+          #  tcpSocket:
+          #    port: sshd
+          #readinessProbe:
+          #  tcpSocket:
+          #    port: sshd
+          resources:
+            {{- toYaml .Values.master.resources | nindent 12 }}
+          volumeMounts:
+            {{- include "cryosparc.volumeMounts" . |nindent 12 }}
+            - name: cryosparc-home
+              mountPath: /home/cryosparc
+            {{- range .Values.volumes }}
+            - mountPath: {{ .path }}
+              name: {{ .name }}
+            {{- end }}
+      initContainers:
+        - name: init
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: alpine
+          command: ["sh","-c"]
+          args:
+            - |
+              HOME="/home/cryosparc"
+              AUTHORIZED_KEYS="${HOME}/.ssh/authorized_keys"
+              SSH_PUB="/k8s-secrets/ssh/id.pub"
+              CRYOSPARC_API={{ include "cryosparc.api" . |quote }}
+              TIMEOUT=20
+              echo 'cryosparc user setup'
+              [ -d ${HOME}/.ssh ] || { mkdir -p ${HOME}/.ssh; chmod 0700 ${HOME}/.ssh; }
+              [ -f $AUTHORIZED_KEYS ] || { cat $SSH_PUB >$AUTHORIZED_KEYS; chmod 0400 $AUTHORIZED_KEYS; }
+              echo "cryosparc master, wait for API ${CRYOSPARC_API}"
+              #until `wget -O/dev/null -q --content-on-error=off --method=OPTIONS --server-response ${CRYOSPARC_API} |grep -q 'HTTP/1.0 200 OK'`; do
+              #until `nc -z -w1 {{ include "cryosparc.fullname" . }} 39002`; do
+              #  [ $TIMEOUT -le 0 ] && break
+              #  let "TIMEOUT=TIMEOUT-1"
+              #  sleep 1
+              #done
+              #[ $TIMEOUT -le 0 ] && { >&2 echo "cryosparc master, wait for API ${CRYOSPARC_API} FAILED"; }
+          volumeMounts:
+            - name: cryosparc-home
+              mountPath: /home/cryosparc
+            - name: secrets
+              mountPath: /k8s-secrets
+              readOnly: true
+      {{- with .Values.worker.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.worker.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        {{- include "cryosparc.volumes" . |nindent 8 }}
+        - name: cryosparc-home
+          emptyDir:
+            sizeLimit: 500Mi
+        - name: secrets
+          secret:
+            secretName: {{ .Values.ssh_secret.name }}
+            items:
+              - key: {{ .Values.ssh_secret.key }}
+                path: ssh/id.pub
+        {{- range .Values.volumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+        {{- end }}
+  {{- if eq .Values.worker.workload_resource "StatefulSet" }}
+  volumeClaimTemplates: []
+  {{- end }}
