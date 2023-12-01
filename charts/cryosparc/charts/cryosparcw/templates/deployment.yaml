@@ -35,6 +35,7 @@ spec:
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           args: ["cryosparcw","connect"]
           env:
+            - {name: CRYOSPARC_LICENSE_ID, value: {{ .Values.license_id |quote }}}
             - {name: CRYOSPARC_HOSTNAME, value: {{ .Values.hostname |quote }}}
             - {name: CRYOSPARC_MASTER, value: {{ .Values.master |quote }}}
             - {name: CRYOSPARC_PORT, value: {{ .Values.port |quote }}}
@@ -71,6 +72,10 @@ spec:
               name: cryosparc-group
               readOnly: true
               subPath: group
+            {{- range .Values.global.cryosparc.volumes }}
+            - mountPath: {{ .path }}
+              name: {{ .name }}
+            {{- end }}
       initContainers:
         - name: init
           securityContext:
@@ -129,3 +134,8 @@ spec:
             items:
               - key: {{ .Values.ssh_secret.key }}
                 path: ssh/id.pub
+        {{- range .Values.global.cryosparc.volumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+        {{- end }}

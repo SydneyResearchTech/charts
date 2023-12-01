@@ -1,6 +1,22 @@
 # Default values for cryosparc.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
+global:
+  cryosparc:
+    volumes:
+      - name: projects
+        accessModes: []
+        path: /cryosparc_projects
+        persistenVolumeClaimName: ""
+        size: 1Gi
+        storageClassName: ""
+        selector: {}
+      - name: ssd
+        accessModes: [ReadWriteOnce]
+        path: /cryosparc_ssd
+        size: 1Gi
+        storageClassName: local-storage
+  storageClassName: ""
 
 cryosparcm:
   enabled: true

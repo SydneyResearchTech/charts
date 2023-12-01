@@ -20,6 +20,7 @@ RUN <<EOT
 EOT
 
 RUN <<EOT
+  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/#export CRYOSPARC_LICENSE_ID=""/' /cryosparc_worker/config.sh
   apt-get update
   apt-get -y install \
     dropbear
@@ -47,4 +48,5 @@ ENTRYPOINT ["/entrypoint.sh"]
 CMD ["cryosparcw","connect"]
 WORKDIR /cryosparc_worker
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    USER=cryosparc
+    USER=cryosparc \
+    CRYOSPARC_LICENSE_ID=""

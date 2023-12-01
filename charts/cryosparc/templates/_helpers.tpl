@@ -1,4 +1,17 @@
 {{/*
+*/}}
+{{- define "cryosparc.storageClassName" -}}
+{{- if or .vol.storageClassName .global.storageClassName -}}
+{{- $storageClassName := (default .global.storageClassName .vol.storageClassName) -}}
+{{- if eq $storageClassName "-" -}}
+{{- printf "storageClassName: \"\"" }}
+{{- else -}}
+{{- printf "storageClassName: %s" $storageClassName }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
 CryoSPARC Master API service name
 http://{{ .Chart.Name }}-cryosparcm-command-core:39002/api
 */}}
