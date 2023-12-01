@@ -71,6 +71,10 @@ spec:
               name: cryosparc-mongodb
             - mountPath: /home/cryosparc
               name: cryosparc-home
+            {{- range .Values.global.cryosparc.volumes }}
+            - mountPath: {{ .path }}
+              name: {{ .name }}
+            {{- end }}
         {{- range .Values.logs }}
         - name: log-{{ . |replace "_" "-" }}
           securityContext:
@@ -132,3 +136,8 @@ spec:
             items:
               - key: {{ .Values.ssh_secret.key }}
                 path: id.key
+        {{- range .Values.global.cryosparc.volumes }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+        {{- end }}

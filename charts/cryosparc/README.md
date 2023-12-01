@@ -3,7 +3,11 @@
 ## Development
 
 ```bash
+./bin/create-ssh-secret
+
 helm upgrade cryosparc ./ -i -f ./tmp/values.yaml
+
+kubectl exec deployment.apps/cryosparc-cryosparcm -- bash -c '/cryosparc_master/bin/cryosparcm createuser --email "dean.taylor@sydney.edu.au" --username "dean.taylor@sydney.edu.au" --firstname "Dean" --lastname "Taylor" --password "password"'
 ```
 
 ## Issues during development

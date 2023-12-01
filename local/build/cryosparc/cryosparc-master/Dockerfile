@@ -33,6 +33,7 @@ RUN <<EOT
 EOT
 
 RUN <<EOT
+  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/#export CRYOSPARC_LICENSE_ID=""/' /cryosparc_master/config.sh
   echo >>/cryosparc_master/config.sh
   echo '# Docker buildx' >>/cryosparc_master/config.sh
   echo 'export CRYOSPARC_FORCE_HOSTNAME=true' >>/cryosparc_master/config.sh
@@ -45,4 +46,5 @@ COPY ./ /
 ENTRYPOINT ["/entrypoint.sh"]
 CMD ["cryosparcm","start"]
 WORKDIR /cryosparc_master
-ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    CRYOSPARC_LICENSE_ID=""

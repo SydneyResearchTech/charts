@@ -12,6 +12,7 @@ eval $(/cryosparc_master/bin/cryosparcm env)
 		--bind_ip_all
 
 if [[ "$1" == *cryosparcm ]] && [[ "$2" == start ]]; then
+	[[ -z $CRYOSPARC_LICENSE_ID ]] && { >&2 echo "CRYOSPARC_LICENSE_ID not set"; exit 1; }
 	$@
 	exec tail -F -n1000 /cryosparc_master/run/supervisord.log
 fi

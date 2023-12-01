@@ -1,0 +1,19 @@
+{{- range .Values.global.cryosparc.volumes -}}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "cryosparc.fullname" $ }}-{{ .name }}
+  labels:
+    {{- include "cryosparc.labels" $ | nindent 4 }}
+spec:
+  accessModes: {{ default (list "ReadWriteMany" |toJson) .accessModes }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .size }}
+  {{- include "cryosparc.storageClassName" (dict "vol" . "global" $.Values.global) |nindent 2 }}
+  {{- if .selector -}}
+  selector: {{ .selector |toJson }}
+  {{- end }}
+{{- end }}

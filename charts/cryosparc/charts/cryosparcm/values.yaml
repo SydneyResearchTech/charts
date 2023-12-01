@@ -10,6 +10,14 @@ license_id: ""
 master_hostname: ""
 base_port: "39000"
 
+project_volumes:
+  - mountPath: /cryosparc_projects
+    storageClassName: ""
+    volumeName: cryosparc-projects
+    accessModes:
+      - ReadWriteMany
+    resources:
+      requests: 1Gi
 
 logs: [app,app_api,command_core,command_rtp,command_vis,database,supervisord]
 mongodb:
