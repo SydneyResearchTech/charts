@@ -1,0 +1,43 @@
+{{- if .Values.master.enabled -}}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "cryosparc.fullname" . }}m-test-install"
+  labels:
+    {{- include "cryosparc.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 8 }}
+  containers:
+    - name: cryosparcm
+      image: "{{ .Values.master.image.repository }}:{{ .Values.master.image.tag | default .Chart.AppVersion }}"
+      command: ['bash','-c']
+      env:
+        - {name: TERM, value: xterm}
+      args:
+        - |
+          ERROR=0
+          eval $(/cryosparc_master/bin/cryosparcm env)
+          echo 'cryosparcm test install'
+          echo 'Test 4. Test if an HTTP connection can be successfully created to the command_core'
+          #wget {{ include "cryosparc.fullname" . }}m:39002
+          [[ $(curl -s -o /dev/null -w "%{http_code}" http://{{ include "cryosparc.fullname" . }}m:39002/) == '200' ]] \
+          || { >&2 echo 'Test 4. Failed'; exit 1; }
+          echo 'Test 5. Check if the environment variable CRYOSPARC_LICENSE_ID is set.'
+          [[ -z $CRYOSPARC_LICENSE_ID ]] && { >&2 echo 'Test5. Failed'; exit 1; }
+          echo 'Validate license.'
+          [[ $(cryosparcm cli 'validate_license()') == 'True' ]] || { \
+            cryosparcm cli 'dump_license_validation_results()'; \
+            ERROR=1; }
+          echo 'Cryosparc Admin user exists?'
+          [[ $(cryosparcm cli 'admin_user_exists()') == 'True' ]] || { >&2 echo 'Failed'; ERROR=1; }
+          exit $ERROR
+      volumeMounts:
+        {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}
+  restartPolicy: Never
+  volumes:
+    {{- include "cryosparc.master.volumes" . |nindent 8 }}
+{{- end }}
