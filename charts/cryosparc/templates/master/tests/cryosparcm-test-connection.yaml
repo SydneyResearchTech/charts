@@ -1,17 +1,18 @@
-{{- if .Values.worker.enabled -}}
+{{- if .Values.master.enabled -}}
 apiVersion: v1
 kind: Pod
 metadata:
-  name: "{{ include "cryosparc.fullname" . }}-worker-test-connection"
+  name: "{{ include "cryosparc.fullname" . }}m-test-connection"
   labels:
     {{- include "cryosparc.labels" . | nindent 4 }}
   annotations:
     "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   containers:
     - name: wget
       image: busybox
       command: ['wget']
-      args: ['{{ include "cryosparc.fullname" . }}:{{ .Values.worker.service.port }}']
+      args: ['{{ include "cryosparc.fullname" . }}m:{{ .Values.master.service.port }}']
   restartPolicy: Never
 {{- end }}

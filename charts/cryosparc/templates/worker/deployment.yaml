@@ -41,7 +41,14 @@ spec:
             - {name: CRYOSPARC_LICENSE_ID, value: {{ .Values.license_id |quote }}}
             - {name: CRYOSPARC_PORT, value: {{ .Values.base_port |quote }}}
             {{- with .Values.worker }}
+            {{- if eq .workload_resource "DaemonSet" }}
+            - name: CRYOSPARC_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            {{- else }}
             - {name: CRYOSPARC_HOSTNAME, value: {{ .hostname |quote }}}
+            {{- end }}
             - {name: CRYOSPARC_MASTER, value: {{ default (printf "%s%s" (include "cryosparc.fullname" $) "m") .master |quote }}}
             - {name: CRYOSPARC_SSDPATH, value: {{ .ssd_path |quote }}}
             - {name: CRYOSPARC_UPDATE, value: {{ ternary "true" "" .update |quote }}}

@@ -8,6 +8,8 @@
 helm upgrade cryosparc ./ -i -f ./tmp/values.yaml
 
 kubectl exec deployment.apps/cryosparc -- bash -c '/cryosparc_master/bin/cryosparcm createuser --email "dean.taylor@sydney.edu.au" --username "dean.taylor@sydney.edu.au" --firstname "Dean" --lastname "Taylor" --password "password"'
+
+kubectl patch pv cryosparc-ssd-2e5342e00d2b -p '{"spec":{"claimRef": null}}'
 ```
 
 ## Issues during development

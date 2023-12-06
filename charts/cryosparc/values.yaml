@@ -29,6 +29,9 @@ ssh_secret:
 
 master:
   enabled: true
+  service_account:
+    email: dean.taylor@sydney.edu.au
+    username: dean.taylor@sydney.edu.au
   users: []
   #  - {email: 'admin@sydney.edu.au', username: 'admin', firstname: 'Admin', lastname: 'User', password: 'password'}
 
