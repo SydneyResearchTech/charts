@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-eval $(/cryosparc_worker/bin/cryosparcw env)
+eval $(cryosparcw env)
 [[ -z $CRYOSPARCW_SSHD_PORT ]] && CRYOSPARCW_SSHD_PORT="2222"
 
 CMD=""

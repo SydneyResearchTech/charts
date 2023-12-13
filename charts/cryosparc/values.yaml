@@ -9,6 +9,14 @@ license_id: ""
 # base port number for the cryoSPARC instance you are connecting the worker node to
 base_port: "39000"
 
+project_container:
+  dir: "/cryosparc_projects"
+  accessModes: []
+  persistenVolumeClaimName: ""
+  size: 1Gi
+  storageClassName: ""
+  selector: {}
+
 volumes:
   - name: projects
     accessModes: []
@@ -24,20 +32,28 @@ volumes:
     storageClassName: local-storage
 
 ssh_secret:
-  name: "cryosparc-user"
-  key: "ssh-privatekey"
+  name: "cryosparc-ssh"
+  keys:
+    private: "id_ed25519"
+    public: "id_ed25519.pub"
 
 master:
   enabled: true
-  service_account:
-    email: dean.taylor@sydney.edu.au
-    username: dean.taylor@sydney.edu.au
-  users: []
-  #  - {email: 'admin@sydney.edu.au', username: 'admin', firstname: 'Admin', lastname: 'User', password: 'password'}
+  admin:
+    email: "admin@cluster.local"
+    secret:
+      name: ""
+      key: password
+
+  user:
+    csv_secret:
+      name: ""
+    users: []
+      # - {email: 'admin@sydney.edu.au', password: 'password', admin: false, username: 'admin', firstname: 'Admin', lastname: 'User'}
 
   #manage_users: false
   #master_hostname: "decom"
-  hostname_override: "????"
+  hostname: ""
 
   #project_volumes:
   #  - mountPath: /cryosparc_projects

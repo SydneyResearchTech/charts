@@ -41,12 +41,12 @@ spec:
                   --password "${PASSWORD}"
               done </k8s-secrets/users
           volumeMounts:
-            {{- include "cryosparcm.volumeMounts" . |nindent 12 }}
+            {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}
             - mountPath: /k8s-secrets
               name: users
       restartPolicy: Never
       volumes:
-        {{- include "cryosparcm.volumes" . |nindent 8 }}
+        {{- include "cryosparc.master.volumes" . |nindent 8 }}
         - name: users
           secret:
             secretName: {{ include "cryosparcm.fullname" . }}

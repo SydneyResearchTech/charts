@@ -35,24 +35,12 @@ spec:
           imagePullPolicy: {{ .Values.master.image.pullPolicy }}
           args: ["cryosparcm","start"]
           ports:
-            - name: http
-              containerPort: 39000
-              protocol: TCP
-            - name: mongodb
-              containerPort: 39001
-              protocol: TCP
-            - name: core
-              containerPort: 39002
-              protocol: TCP
-            - name: vis
-              containerPort: 39003
-              protocol: TCP
-            - name: rtp
-              containerPort: 39005
-              protocol: TCP
-            - name: api
-              containerPort: 39006
-              protocol: TCP
+            - {name: http, containerPort: 39000, protocol: TCP}
+            - {name: mongodb, containerPort: 39001, protocol: TCP}
+            - {name: core, containerPort: 39002, protocol: TCP}
+            - {name: vis, containerPort: 39003, protocol: TCP}
+            - {name: rtp, containerPort: 39005, protocol: TCP}
+            - {name: api, containerPort: 39006, protocol: TCP}
           #livenessProbe:
           #  httpGet:
           #    path: /
@@ -69,12 +57,26 @@ spec:
               name: cryosparc-run
             - mountPath: /cryosparc_database
               name: cryosparc-mongodb
-            - mountPath: /home/cryosparc
-              name: cryosparc-home
             {{- range .Values.volumes }}
             - mountPath: {{ .path }}
               name: cryosparc-{{ .name }}
             {{- end }}
+        - name: sync-users
+          securityContext:
+            {{- toYaml $.Values.securityContext | nindent 12 }}
+          image: "{{ .Values.master.image.repository }}:{{ .Values.master.image.tag | default .Chart.AppVersion }}"
+          args: ["cryosparcm-sync-user"]
+          env:
+            - {name: PYTHONUNBUFFERED, value: "1"}
+            - name: CRYOSPARCM_UUID_EMAIL
+              value: {{ .Values.master.admin.email }}
+            - name: CRYOSPARCM_CHECKSUM_USERS
+              value: {{ include (print $.Template.BasePath "/master/secret-users.yaml") . | sha256sum }}
+          volumeMounts:
+            {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}
+            - mountPath: /k8s-secrets/user-acct
+              name: cryosparc-users
+              readOnly: true
         {{- range .Values.master.logs }}
         - name: log-{{ . |replace "_" "-" }}
           securityContext:
@@ -99,10 +101,11 @@ spec:
             - |
               HOME="/home/cryosparc"
               SSH_KEY="/k8s-secrets/id.key"
-              [ -d ${HOME}/.ssh ] || { mkdir -p ${HOME}/.ssh; chmod 0700 ${HOME}/.ssh; }
-              [ -f ${HOME}/.ssh/id_ed25519 ] || { cp $SSH_KEY ${HOME}/.ssh/id_ed25519; chmod 0400 ${HOME}/.ssh/id_ed25519; }
+              [ -d "${HOME}" ] || { mkdir -p "${HOME}"; chmod 0700 "${HOME}"; }
+              [ -d "${HOME}/.ssh" ] || { mkdir -p "${HOME}/.ssh"; chmod 0700 "${HOME}/.ssh"; }
+              [ -f "${HOME}/.ssh/id_ed25519" ] || { cp "${SSH_KEY}" "${HOME}/.ssh/id_ed25519"; chmod 0400 "${HOME}/.ssh/id_ed25519"; }
           volumeMounts:
-            - mountPath: /home/cryosparc
+            - mountPath: /home
               name: cryosparc-home
             - mountPath: /k8s-secrets/
               name: cryosparc-ssh
@@ -124,9 +127,6 @@ spec:
         - name: cryosparc-run
           emptyDir:
             sizeLimit: 500Mi
-        - name: cryosparc-home
-          emptyDir:
-            sizeLimit: 500Mi
         - name: cryosparc-mongodb
           persistentVolumeClaim:
             claimName: {{ include "cryosparc.fullname" . }}-mongodb
@@ -134,8 +134,11 @@ spec:
           secret:
             secretName: {{ .Values.ssh_secret.name }}
             items:
-              - key: {{ .Values.ssh_secret.key }}
+              - key: {{ .Values.ssh_secret.keys.private }}
                 path: id.key
+        - name: cryosparc-users
+          secret:
+            secretName: {{ include "cryosparc.fullname" . }}-users
         {{- range .Values.volumes }}
         - name: cryosparc-{{ .name }}
           persistentVolumeClaim:
