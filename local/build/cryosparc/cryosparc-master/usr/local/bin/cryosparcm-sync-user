@@ -1,0 +1,72 @@
+#!/usr/bin/env python
+# cryosparcm-sync-users
+import csv
+import os
+import random
+import string
+import sys
+import time
+from cryosparc_compute import client
+_CHOICE = string.ascii_uppercase + string.ascii_lowercase + string.digits
+
+host = os.environ['CRYOSPARC_MASTER_HOSTNAME']
+command_core_port = int(os.environ['CRYOSPARC_COMMAND_CORE_PORT'])
+command_rtp_port = int(os.environ['CRYOSPARC_COMMAND_RTP_PORT'])
+email_address = os.environ['CRYOSPARCM_UUID_EMAIL']
+project_container_dir = '/cryosparc_projects'
+
+#cli = client.CommandClient(host=host, port=command_core_port)
+#rtp = client.CommandClient(host=host, port=command_rtp_port)
+
+def create_user(cli,user_id,email,password='',admin='False',username='',firstname='',lastname=''):
+    try:
+        cli.create_user(
+            created_by_user_id = user_id,
+            email = email,
+            password = password if password else ''.join(random.SystemRandom().choice(_CHOICE) for _ in range(32)),
+            admin = True if (admin and admin.lower()=='true') else False,
+            username = username if username else email,
+            first_name = firstname,
+            last_name = lastname
+            )
+        #cli.update_user(email,password,username,first_name,last_name,admin)
+        if not password:
+            cli.request_reset_password(email=email)
+        print("created_user:",email)
+    except Exception as e:
+        print(e)
+        pass
+
+def main() -> int:
+    print("CRYOSPARC_COMMAND_CORE_PORT:",command_core_port)
+    print("CRYOSPARC_MASTER_HOSTNAME:",host)
+    print("CRYOSPARCM_UUID_EMAIL:",email_address)
+
+    while True:
+        try:
+            cli = client.CommandClient(host=host, port=command_core_port)
+            break
+        except:
+            pass
+
+    user_id = cli.get_id_by_email(email_address)
+    _checksum = ''
+    while True:
+        if os.environ['CRYOSPARCM_CHECKSUM_USERS'] != _checksum:
+            # cli.list_users()
+            for root,dirs,files in os.walk('/k8s-secrets'):
+                for file in files:
+                    if file.endswith('-users.csv'):
+                        _file = os.path.join(root,file)
+                        print("processing file:",_file)
+                        with open(_file, newline='') as f:
+                            users = csv.DictReader(f)
+                            for user in users:
+                                create_user(cli,user_id,user['email'],user['password'],user['admin'],user['username'],user['firstname'],user['lastname'])
+            _checksum = os.environ['CRYOSPARCM_CHECKSUM_USERS']
+        time.sleep(15)
+
+    return 0
+
+if __name__ == '__main__':
+    sys.exit(main())

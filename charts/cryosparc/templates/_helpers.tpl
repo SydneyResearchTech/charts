@@ -3,6 +3,10 @@
 {{- define "cryosparc.master.service" -}}
 {{- end }}
 
+{{- define "cryosparc.master.isready" -}}
+$(curl -s -o /dev/null -w "%{http_code}" http://{{ include "cryosparc.fullname" . }}m:39002/) == '200'
+{{- end }}
+
 {{/*
 CryoSPARC common container volumes
 */}}
@@ -15,29 +19,75 @@ CryoSPARC common container volumes
   name: cryosparc-group
   readOnly: true
   subPath: group
+- mountPath: /home
+  name: cryosparc-home
 {{- end }}
+
 {{- define "cryosparc.volumes" -}}
-- name: cryosparc-passwd
-  configMap:
-    name: {{ include "cryosparc.fullname" . }}
-    items: [{key: passwd, path: passwd}]
 - name: cryosparc-group
   configMap:
     name: {{ include "cryosparc.fullname" . }}
     items: [{key: group, path: group}]
+- name: cryosparc-home
+  emptyDir:
+    sizeLimit: 500Mi
+{{- end }}
+
+{{- define "cryosparc.master.volumeMounts" -}}
+{{ include "cryosparc.volumeMounts" . }}
+- mountPath: /cryosparc_master/config.sh
+  name: cryosparc-config
+  readOnly: true
+  subPath: config.sh
+{{- end }}
+
+{{- define "cryosparc.master.volumes" -}}
+- name: cryosparc-passwd
+  configMap:
+    name: {{ include "cryosparc.fullname" . }}
+    items: [{key: passwd, path: passwd}]
+{{ include "cryosparc.volumes" . }}
+- name: cryosparc-config
+  secret:
+    secretName: {{ include "cryosparc.fullname" . }}
+    items:
+      - key: config.sh
+        path: config.sh
+{{- end }}
+
+{{- define "cryosparc.worker.volumeMounts" -}}
+{{ include "cryosparc.volumeMounts" . }}
+- mountPath: /cryosparc_worker/config.sh
+  name: cryosparc-config
+  readOnly: true
+  subPath: config.sh
+{{- end }}
+
+{{- define "cryosparc.worker.volumes" -}}
+- name: cryosparc-passwd
+  configMap:
+    name: {{ include "cryosparc.fullname" . }}w
+    items: [{key: passwd, path: passwd}]
+{{ include "cryosparc.volumes" . }}
+- name: cryosparc-config
+  secret:
+    secretName: {{ include "cryosparc.fullname" . }}w
+    items:
+      - key: config.sh
+        path: config.sh
 {{- end }}
 
 {{/*
 CryoSPARC Master container volumes
 */}}
-{{- define "cryosparc.master.volumeMounts" -}}
+{{- define "cryosparc.master.volumeMounts.decomm" -}}
 - mountPath: /cryosparc_master/config.sh
   name: config-sh
   readOnly: true
   subPath: config.sh
 {{ include "cryosparc.volumeMounts" . }}
 {{- end }}
-{{- define "cryosparc.master.volumes" -}}
+{{- define "cryosparc.master.volumes.decomm" -}}
 - name: config-sh
   secret:
     secretName: {{ include "cryosparc.fullname" . }}

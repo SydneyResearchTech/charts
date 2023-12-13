@@ -20,14 +20,8 @@ spec:
         - {name: TERM, value: xterm}
       args:
         - |
-          ERROR=0
-          eval $(/cryosparc_master/bin/cryosparcm env)
-          USER_ID=$(cryosparcm listusers \
-            |sed -e '1,2d' -e 's/\s//g' -e '/^\s*$/d' \
-              -e '{{ .Values.master.service_account.username }}' \
-            |cut -d| -f4)
-          cryosparcm cli 'create_empty_project(owner_user_id: "", project_container_dir: "/cryosparc_project")'
-          exit $ERROR
+          eval $(cryosparcm env)
+          python -c {{ .Files.get "scripts/verify-extensive-workflow.py" }}
       volumeMounts:
         {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}
   restartPolicy: Never

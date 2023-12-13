@@ -76,11 +76,11 @@ spec:
           #  tcpSocket:
           #    port: sshd
           resources:
-            {{- toYaml .Values.master.resources | nindent 12 }}
+            {{- toYaml .Values.worker.resources | nindent 12 }}
           volumeMounts:
-            {{- include "cryosparc.volumeMounts" . |nindent 12 }}
-            - name: cryosparc-home
-              mountPath: /home/cryosparc
+            {{- include "cryosparc.worker.volumeMounts" . |nindent 12 }}
+            - name: dropbear-etc
+              mountPath: /etc/dropbear
             {{- range .Values.volumes }}
             - mountPath: {{ .path }}
               name: {{ .name }}
@@ -99,9 +99,10 @@ spec:
               CRYOSPARC_API={{ include "cryosparc.api" . |quote }}
               TIMEOUT=20
               echo 'cryosparc user setup'
-              [ -d ${HOME}/.ssh ] || { mkdir -p ${HOME}/.ssh; chmod 0700 ${HOME}/.ssh; }
-              [ -f $AUTHORIZED_KEYS ] || { cat $SSH_PUB >$AUTHORIZED_KEYS; chmod 0400 $AUTHORIZED_KEYS; }
-              echo "cryosparc master, wait for API ${CRYOSPARC_API}"
+              [ -d "${HOME}" ] || { mkdir -p "${HOME}"; chmod 0700 "${HOME}"; }
+              [ -d "${HOME}/.ssh" ] || { mkdir -p "${HOME}/.ssh"; chmod 0700 "${HOME}/.ssh"; }
+              [ -f "${AUTHORIZED_KEYS}" ] || { cat "${SSH_PUB}" >"${AUTHORIZED_KEYS}"; chmod 0400 "${AUTHORIZED_KEYS}"; }
+              #echo "cryosparc master, wait for API ${CRYOSPARC_API}"
               #until `wget -O/dev/null -q --content-on-error=off --method=OPTIONS --server-response ${CRYOSPARC_API} |grep -q 'HTTP/1.0 200 OK'`; do
               #until `nc -z -w1 {{ include "cryosparc.fullname" . }} 39002`; do
               #  [ $TIMEOUT -le 0 ] && break
@@ -111,7 +112,7 @@ spec:
               #[ $TIMEOUT -le 0 ] && { >&2 echo "cryosparc master, wait for API ${CRYOSPARC_API} FAILED"; }
           volumeMounts:
             - name: cryosparc-home
-              mountPath: /home/cryosparc
+              mountPath: /home
             - name: secrets
               mountPath: /k8s-secrets
               readOnly: true
@@ -128,15 +129,15 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       volumes:
-        {{- include "cryosparc.volumes" . |nindent 8 }}
-        - name: cryosparc-home
+        {{- include "cryosparc.worker.volumes" . |nindent 8 }}
+        - name: dropbear-etc
           emptyDir:
             sizeLimit: 500Mi
         - name: secrets
           secret:
             secretName: {{ .Values.ssh_secret.name }}
             items:
-              - key: {{ .Values.ssh_secret.key }}
+              - key: {{ .Values.ssh_secret.keys.public }}
                 path: ssh/id.pub
         {{- range .Values.volumes }}
         - name: {{ .name }}

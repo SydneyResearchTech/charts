@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-eval $(/cryosparc_master/bin/cryosparcm env)
+eval $(cryosparcm env)
 
 [[ "$1" == *mongod ]] && \
 	exec mongod $CRYOSPARC_DB_ENABLE_AUTH_FLAG \
@@ -13,6 +13,7 @@ eval $(/cryosparc_master/bin/cryosparcm env)
 
 if [[ "$1" == *cryosparcm ]] && [[ "$2" == start ]]; then
 	[[ -z $CRYOSPARC_LICENSE_ID ]] && { >&2 echo "CRYOSPARC_LICENSE_ID not set"; exit 1; }
+	#for f in /entrypoint.d/*.sh; do source "${f}"; done
 	$@
 	exec tail -F -n1000 /cryosparc_master/run/supervisord.log
 fi
