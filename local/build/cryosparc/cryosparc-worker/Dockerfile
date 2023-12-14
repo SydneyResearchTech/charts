@@ -16,17 +16,18 @@ EOT
 RUN <<EOT
   cd /cryosparc_worker
   ./install.sh --license ${LICENSE_ID} --yes
-  echo 'eval $(/cryosparc_worker/bin/cryosparcw env)' >>/etc/bash.bashrc
   rm -rf /var/lib/apt/lists/*
 EOT
 
 RUN <<EOT
-  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/#export CRYOSPARC_LICENSE_ID=""/' /cryosparc_worker/config.sh
+  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/export CRYOSPARC_LICENSE_ID=""/' /cryosparc_worker/config.sh
+  echo 'eval $(/cryosparc_worker/bin/cryosparcw env)' >>/etc/bash.bashrc
+  cp /cryosparc_worker/config.sh /cryosparc_worker/config.sh-orig
+  useradd -c 'CryoSPARC user' -m -s /bin/sh cryosparc
   apt-get update
   apt-get -y install \
     dropbear
   rm -rf /var/lib/apt/lists/*
-  useradd -c 'CryoSPARC user' -m -s /bin/sh cryosparc
 EOT
 
 COPY ./ /
