@@ -28,18 +28,18 @@ RUN <<EOT
                --port 39000 \
                --allowroot --yes
   rm -rf /var/lib/apt/lists/*
-  useradd -c 'CryoSPARC user' -m -s /usr/sbin/nologin cryosparc
-  echo 'eval $(/cryosparc_master/bin/cryosparcm env)' >>/etc/bash.bashrc
-  cp /cryosparc_master/config.sh /cryosparc_master/config.sh-orig
 EOT
 
 RUN <<EOT
-  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/#export CRYOSPARC_LICENSE_ID=""/' /cryosparc_master/config.sh
-  echo >>/cryosparc_master/config.sh
+  sed -i 's/^export\s*CRYOSPARC_LICENSE_ID=.*$/export CRYOSPARC_LICENSE_ID=""/' /cryosparc_master/config.sh
+  echo '' >>/cryosparc_master/config.sh
   echo '# Docker buildx' >>/cryosparc_master/config.sh
   echo 'export CRYOSPARC_FORCE_HOSTNAME=true' >>/cryosparc_master/config.sh
   echo 'export CRYOSPARC_FORCE_USER=true' >>/cryosparc_master/config.sh
+  echo 'eval $(cryosparcm env)' >>/etc/bash.bashrc
+  cp /cryosparc_master/config.sh /cryosparc_master/config.sh-orig
   cp /cryosparc_master/supervisord.conf /cryosparc_master/supervisord.conf-orig
+  useradd -c 'CryoSPARC user' -m -s /usr/sbin/nologin cryosparc
 EOT
 
 COPY ./ /
