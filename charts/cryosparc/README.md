@@ -1,5 +1,13 @@
 # charts/cryosparc/README.md
 
+## Minimum requirements
+
+[To run the full test suit.](https://guide.cryosparc.com/setup-configuration-and-management/hardware-and-system-requirements)
+
+* 4 cores CPU
+* 32GB RAM
+* 1x Nvidia GPU
+
 ## Deployment
 
 ```bash
