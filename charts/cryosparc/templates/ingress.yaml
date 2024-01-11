@@ -48,10 +48,14 @@ spec:
             {{- end }}
             backend:
               {{- if semverCompare ">=1.19-0" $.Capabilities.KubeVersion.GitVersion }}
+              {{- if .backend }}
+              {{- .backend |toYaml |nindent 14 }}
+              {{- else }}
               service:
                 name: {{ $fullName }}m
                 port:
                   number: {{ $svcPort }}
+              {{ end }}
               {{- else }}
               serviceName: {{ $fullName }}m
               servicePort: {{ $svcPort }}

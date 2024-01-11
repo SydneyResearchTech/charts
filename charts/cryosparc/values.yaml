@@ -247,3 +247,39 @@ ingress:
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
+# https://github.com/oauth2-proxy/manifests/tree/main/helm/oauth2-proxy
+oauth2-proxy:
+  enabled: false
+  # config:
+  #   clientID: cryosparc.lo.sydney.edu.au
+  #   clientSecret: AuaqQnbsCMfsJdzXNyIGV9Oa54yEE69a
+  #   cookieSecret: L1oyVmlSMy9JYnFnZUxsbVlYT3AwaXh5eHdFbWVqSHo=
+  #   configFile: |-
+  #     provider = "keycloak-oidc"
+  #     provider_display_name = "keycloak@lo.sydney.edu.au"
+  #     oidc_issuer_url = "https://keycloak.lo.sydney.edu.au/realms/master"
+  #     redirect_url = "https://cryosparc.lo.sydney.edu.au/oauth2/callback"
+  #     email_domains = [
+  #       "*"
+  #     ]
+  #     code_challenge_method = "S256"
+  #     ssl_insecure_skip_verify = true
+  #     insecure_oidc_allow_unverified_email = true
+  #     request_logging = true
+  # service:
+  #   portNumber: 4180
+  # ingress:
+  #   enabled: true
+  #   className: nginx
+  #   path: /oauth2
+  #   pathType: Prefix
+  #   annotations:
+  #     # ISSUE upstream sent too big header
+  #     nginx.ingress.kubernetes.io/proxy-buffer-size: "256k"
+  #   hosts:
+  #   - cryosparc.lo.sydney.edu.au
+  #   tls:
+  #   - hosts:
+  #     - cryosparc.lo.sydney.edu.au
+  #     secretName: cryosparc-tls

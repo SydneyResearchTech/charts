@@ -23,8 +23,8 @@ version: 0.1.0
 # It is recommended to use it with quotes.
 appVersion: v4.4.1
 
-dependencies: []
-  #- name: mongodb
-  #  version: >=0.1.0
-  #  condition: mongodb.enabled
-  #  repository: https://charts.bitnami.com/bitnami
+dependencies:
+  - name: oauth2-proxy
+    version: ">=6.23.1"
+    condition: oauth2-proxy.enabled
+    repository: https://oauth2-proxy.github.io/manifests
