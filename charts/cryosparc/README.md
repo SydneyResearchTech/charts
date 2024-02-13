@@ -13,8 +13,10 @@
 ```bash
 kubectl exec -it deployment.apps/cryosparc -- mkdir -p /cryosparc_projects/data/EMPIAR/10025/data
 
+POD=$(kubectl get pod -l app.kubernetes.io/name=cryosparc -o jsonpath="{.items[0].metadata.name}")
+
 kubectl cp ~/cryosparc/empiar_10025_subset.tar \
-cryosparc-5d679f9d9f-grrlz:/cryosparc_projects/data/EMPIAR/10025/data/empiar_10025_subset.tar
+$POD:/cryosparc_projects/data/EMPIAR/10025/data/empiar_10025_subset.tar
 
 kubectl exec -it deployment.apps/cryosparc -- \
 tar xf /cryosparc_projects/data/EMPIAR/10025/data/empiar_10025_subset.tar -C/cryosparc_projects/data/EMPIAR/10025/data
@@ -25,6 +27,22 @@ kubectl exec -it deployment.apps/cryosparc -- bash -c 'cryosparcm test install'
 kubectl exec -it deployment.apps/cryosparc -- bash -c 'cryosparcm test workers P1 --test-tensorflow --test-pytorch'
 
 kubectl exec -it deployment.apps/cryosparc -- bash -c 'ssh-keygen -f "/home/cryosparc/.ssh/authorized_keys" -R "[10.0.19.23]:2222"'
+```
+
+```
+kubectl get pod -l app.kubernetes.io/name=cryosparc -o jsonpath="{.items[0].spec.containers[*].name}"
+kubectl get pod -l app.kubernetes.io/name=cryosparc -o jsonpath="{.items[0].spec.containers[*].name}" |grep -o '\blog-[a-z-]*' \
+| xargs -n1 kubectl logs --tail=20 deployment.apps/cryosparc -c
+```
+
+## Extensive Validation
+
+```
+/bulk5/data/EMPIAR/10025/data/empiar_10025_subset
+```
+
+```
+/bulk9/data/EMPIAR/10305/data/empiar_10305
 ```
 
 ## User management
@@ -46,7 +64,7 @@ user2@sydney.edu.au,,,False,User,Two
 ```bash
 ./bin/create-ssh-secret
 
-helm upgrade cryosparc ./ -i -f ./tmp/values.yaml
+helm upgrade cryosparc ./ -i -f ./tmp/values.yaml --wait
 
 kubectl exec deployment.apps/cryosparc -- bash -c '/cryosparc_master/bin/cryosparcm createuser --email "dean.taylor@sydney.edu.au" --username "dean.taylor@sydney.edu.au" --firstname "Dean" --lastname "Taylor" --password "password"'
 
