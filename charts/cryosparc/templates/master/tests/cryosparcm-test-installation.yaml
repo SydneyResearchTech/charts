@@ -6,9 +6,8 @@ metadata:
   labels:
     {{- include "cryosparc.labels" . | nindent 4 }}
   annotations:
-    "helm.sh/hook": test
-    "helm.sh/hook-delete-policy": before-hook-creation
-    #"helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+    "helm.sh/hook": post-install,test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   securityContext:
     {{- toYaml .Values.podSecurityContext | nindent 8 }}
