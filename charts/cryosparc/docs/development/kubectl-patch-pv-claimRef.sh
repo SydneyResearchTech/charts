@@ -5,6 +5,11 @@ PVs=( \
 	cryosparc-projects \
 	cryosparc-empiar-10025-subset \
 )
-for pv in "${PVs[@]}"; do
-kubectl patch pv $pv -p '{"spec":{"claimRef": null}}'
+for PV in "${PVs[@]}"; do
+	PVC=$PV
+	[[ $PV == cryosparc-ssd-2e5342e00d2b ]] && PVC='cryosparc-ssd'
+	kubectl patch pv $PV -p '{"spec":{"claimRef": null}}'
+	kubectl patch pv $PV -p '{"spec":{"claimRef":{"name": "'${PVC}'", "namespace": "default"}}}'
 done
+
+exit 0
