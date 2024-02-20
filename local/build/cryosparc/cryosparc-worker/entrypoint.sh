@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
+set -e
 eval $(cryosparcw env)
 [[ -z $CRYOSPARCW_SSHD_PORT ]] && CRYOSPARCW_SSHD_PORT="2222"
 
