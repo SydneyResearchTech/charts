@@ -1,6 +1,7 @@
 FROM nvidia/cuda:11.7.1-base-ubuntu22.04
 ARG LICENSE_ID
-ARG DOCKER_IMAGE_TAG=v4.4.1
+ARG CRYOSPARC_VERSION=v4.4.1
+ARG DOCKER_IMAGE_TAG=0.1.0
 
 ENV LICENSE_ID=${LICENSE_ID}
 
@@ -8,7 +9,7 @@ RUN <<EOT
   apt-get update
   apt-get -y install curl
   rm -rf /var/lib/apt/lists/*
-  curl -L https://get.cryosparc.com/download/worker-${DOCKER_IMAGE_TAG}/$LICENSE_ID -o cryosparc_worker.tar.gz
+  curl -L https://get.cryosparc.com/download/worker-${CRYOSPARC_VERSION}/$LICENSE_ID -o cryosparc_worker.tar.gz
   tar -xzf cryosparc_worker.tar.gz cryosparc_worker
   rm -f cryosparc_worker.tar.gz
 EOT
@@ -52,4 +53,5 @@ WORKDIR /cryosparc_worker
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/cryosparc_worker/bin:${PATH}" \
     USER=cryosparc \
+    CRYOSPARC_VERSION=${CRYOSPARC_VERSION} \
     CRYOSPARC_LICENSE_ID=""
