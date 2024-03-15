@@ -3,6 +3,7 @@ import os
 import re
 import yaml
 import sys
+import argparse
 
 def getValues(subchart):
     valuesYaml = ""
@@ -28,16 +29,16 @@ def getValues(subchart):
 
     return valuesYaml
 
-def main():
+def main(wd='./', dryRun=False):
     valuesYaml = ""
     chartValues = {}
     subchart = ""
     header = ""
 
-    with open("Chart.yaml") as f:
+    with open(os.path.join(wd,"Chart.yaml")) as f:
         chart = yaml.safe_load(f)
     for d in chart['dependencies']:
-        _values = "charts/{}/values.yaml".format(d['name'])
+        _values = os.path.join(wd,"charts",d['name'],"values.yaml")
         if os.path.isfile(_values):
             chartValues[d['name']] = getValues(_values)
 
@@ -45,7 +46,7 @@ def main():
 
     isRootElement = re.compile('[a-zA-Z0-9-_]+:')
 
-    with open("values.yaml") as f:
+    with open(os.path.join(wd,"values.yaml")) as f:
         for line in f:
             if isRootElement.match(line):
                 if subchart:
@@ -75,9 +76,18 @@ def main():
         valuesYaml += "{}:".format(_subchart) +os.linesep
         valuesYaml += chartValues[_subchart]
 
-    with open("values.yaml", 'w') as f:
-        f.write(valuesYaml)
-    #sys.stdout.write(valuesYaml)
+    if not dryRun:
+        with open(os.path.join(wd,"values.yaml"), 'w') as f:
+            f.write(valuesYaml)
+    else:
+        sys.stdout.write(valuesYaml)
 
 if __name__ == '__main__':
-    main()
+    parser = argparse.ArgumentParser(
+            prog = 'merge-values',
+            description = 'Merge sub-chart values into umbrella values')
+    parser.add_argument('chart_dir', default='./')
+    parser.add_argument('-n', '--dry-run', action='store_true')
+    args = parser.parse_args()
+
+    main(args.chart_dir, args.dry_run)

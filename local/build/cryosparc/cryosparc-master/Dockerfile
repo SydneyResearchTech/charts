@@ -2,7 +2,8 @@
 #
 FROM ubuntu:22.04 as build
 ARG LICENSE_ID
-ARG DOCKER_IMAGE_TAG=v4.4.1
+ARG CRYOSPARC_VERSION=v4.4.1
+ARG DOCKER_IMAGE_TAG=0.1.0
 
 ENV LICENSE_ID=${LICENSE_ID}
 
@@ -11,7 +12,7 @@ RUN <<EOT
   apt-get -y install \
     curl
   rm -rf /var/lib/apt/lists/*
-  curl -L https://get.cryosparc.com/download/master-${DOCKER_IMAGE_TAG}/$LICENSE_ID -o cryosparc_master.tar.gz
+  curl -L https://get.cryosparc.com/download/master-${CRYOSPARC_VERSION}/$LICENSE_ID -o cryosparc_master.tar.gz
   tar -xf cryosparc_master.tar.gz cryosparc_master
   rm -f cryosparc_master.tar.gz
 EOT
@@ -50,4 +51,5 @@ WORKDIR /cryosparc_master
 ENV PYTHONDONTWRITEBYTECODE=1 \
     TERM="xterm" \
     PATH="/cryosparc_master/bin:${PATH}" \
+    CRYOSPARC_VERSION=${CRYOSPARC_VERSION} \
     CRYOSPARC_LICENSE_ID=""
