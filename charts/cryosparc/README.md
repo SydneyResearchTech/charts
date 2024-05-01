@@ -1,5 +1,8 @@
 # charts/cryosparc/README.md
 
+| Key | Type | Default | Description |
+| --- | ---- | ------- | ----------- |
+
 ## Minimum requirements
 
 [To run the full test suit.](https://guide.cryosparc.com/setup-configuration-and-management/hardware-and-system-requirements)
@@ -9,6 +12,43 @@
 * 1x Nvidia GPU
 
 ## Deployment
+
+NVIDIA examples
+
+```bash
+kubectl get node ip-10-0-19-23 -o=jsonpath='{.metadata.labels}' \
+ |jq '.|with_entries(select(.key|startswith("nvidia")))'
+```
+
+```json
+{
+  "nvidia.com/cuda.driver.major": "545",
+  "nvidia.com/cuda.driver.minor": "23",
+  "nvidia.com/cuda.driver.rev": "08",
+  "nvidia.com/cuda.runtime.major": "12",
+  "nvidia.com/cuda.runtime.minor": "3",
+  "nvidia.com/gfd.timestamp": "1710736196",
+  "nvidia.com/gpu.compute.major": "7",
+  "nvidia.com/gpu.compute.minor": "5",
+  "nvidia.com/gpu.count": "1",
+  "nvidia.com/gpu.deploy.container-toolkit": "true",
+  "nvidia.com/gpu.deploy.dcgm": "true",
+  "nvidia.com/gpu.deploy.dcgm-exporter": "true",
+  "nvidia.com/gpu.deploy.device-plugin": "true",
+  "nvidia.com/gpu.deploy.driver": "true",
+  "nvidia.com/gpu.deploy.gpu-feature-discovery": "true",
+  "nvidia.com/gpu.deploy.node-status-exporter": "true",
+  "nvidia.com/gpu.deploy.operator-validator": "true",
+  "nvidia.com/gpu.family": "turing",
+  "nvidia.com/gpu.machine": "g4dn.4xlarge",
+  "nvidia.com/gpu.memory": "15360",
+  "nvidia.com/gpu.present": "true",
+  "nvidia.com/gpu.product": "Tesla-T4",
+  "nvidia.com/gpu.replicas": "1",
+  "nvidia.com/mig.capable": "false",
+  "nvidia.com/mig.strategy": "single"
+}
+```
 
 ```bash
 kubectl exec -it deployment.apps/cryosparc -- mkdir -p /cryosparc_projects/data/EMPIAR/10025/data
@@ -34,6 +74,15 @@ kubectl get pod -l app.kubernetes.io/name=cryosparc -o jsonpath="{.items[0].spec
 kubectl get pod -l app.kubernetes.io/name=cryosparc -o jsonpath="{.items[0].spec.containers[*].name}" |grep -o '\blog-[a-z-]*' \
 | xargs -n1 kubectl logs --tail=20 deployment.apps/cryosparc -c
 ```
+
+## Operations
+
+### Maintenance mode
+
+* cryosparcm cli "get_scheduler_targets()" | tee cryosparc_targets_$(date +%s).out
+  * cryosparcm cli remove_scheduler_target_node('worker_name')
+  * https://discuss.cryosparc.com/t/maintenance-mode-for-worker-nodes/10624
+* kubectl create job --from=cronjob/<name of cronjob> <name of job>
 
 ## Extensive Validation
 

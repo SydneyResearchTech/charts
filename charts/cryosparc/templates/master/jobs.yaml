@@ -37,7 +37,7 @@ spec:
                 --password "${UUID_PASSWORD}" \
                 --username "{{ .email }}" \
                 --firstname "Admin" \
-                --lastname "Account"
+                --lastname "Cluster-local"
               {{- end }}
           volumeMounts:
             {{- include "cryosparc.master.volumeMounts" . |nindent 12 }}

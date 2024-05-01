@@ -51,18 +51,18 @@ master:
     users: []
       # - {email: 'admin@sydney.edu.au', password: 'password', admin: false, username: 'admin', firstname: 'Admin', lastname: 'User'}
 
-  #manage_users: false
-  #master_hostname: "decom"
+  # manage_users: false
+  # master_hostname: "decom"
   hostname: ""
 
-  #project_volumes:
-  #  - mountPath: /cryosparc_projects
-  #    storageClassName: ""
-  #    volumeName: cryosparc-projects
-  #    accessModes:
-  #      - ReadWriteMany
-  #    resources:
-  #      requests: 1Gi
+  # project_volumes:
+  # - mountPath: /cryosparc_projects
+  #   storageClassName: ""
+  #   volumeName: cryosparc-projects
+  #   accessModes:
+  #   - ReadWriteMany
+  #   resources:
+  #     requests: 1Gi
 
   command_core:
     command: python -c "import cryosparc_command.command_core as serv; serv.start(port=${CRYOSPARC_COMMAND_CORE_PORT})"
@@ -93,7 +93,7 @@ master:
       selector: {}
 
   # WORKAROUND side container(s) for log management
-  logs: [app,app_api,command_core,command_rtp,command_vis,database,supervisord]
+  logs: [app, app_api, command_core, command_rtp, command_vis, database, supervisord]
 
   replicaCount: 1
 
@@ -138,6 +138,18 @@ master:
 
   affinity: {}
 
+## @param worker (dict) CryoSPARC Worker node configuration
+## @param worker.hostname (string) Hostname of the worker node to connect to your cryoSPARC instance
+## @param worker.master (string) Override default CryoSPARC Master service name
+## @param worker.ssd_path (string) Directory on SSD volume to use for CryoSPARC
+## @param worker.update (string) use when updating the existing configuration
+## @param worker.ssh_string (string) Override default SSH string to register with the CryoSPARC Master
+## @param worker.cpus (number) Number of CPUs to dedicate, default uses all CPU cores
+## @param worker.nogpus (bool) connect worker with no GPUs
+## @param worker.gpus (string) enable specific GPU devices only, e.g. gpus: 0,1,2,3
+## @param worker.ssd_quota (number) MiB quota of how much SSD space to use, default unlimited
+## @param worker.ssd_reserved (number) MiB minimum free space to leave on SSD
+## @param worker.new_lane (bool) force creation of a new lane if it does not already exist
 worker:
   # hostname of the worker node to connect to your cryoSPARC instance
   hostname: ""
@@ -145,7 +157,7 @@ worker:
   master: ""
   # path to directory on local SSD if "" --nossd parameter will apply
   ssd_path: ""
-  # use when updating and existing configuration
+  # use when updating the existing configuration
   update: false
   # custom SSH connection string such as user@hostname
   ssh_string: ""
@@ -161,13 +173,41 @@ worker:
   ssd_quota: 0
   # minimum free space to leave on SSD (MB); 0 = no reserve
   ssd_reseved: 0
-  # name of lane to add worker to
-  lane: ""
+  # NOT USED name of lane to add worker to
+  #lane: ""
   # force creation of a new lane if the lane specified does not exist
   new_lane: false
 
-  # Deployment or DaemonSet or StatefulSet
-  workload_resource: StatefulSet
+  # Worker node lane and lane specific settings/over-rides
+  ## @param worker.lanes (array[dict]) Lane specific settings
+  ## @param worker.lanes[].lane (string) Lane name
+  ## @param worker.lanes[].hostname (string) Override default hostname
+  ## @param worker.lanes[].master (string) Override default CryoSPARC Master service name
+  ## @param worker.lanes[].ssd_path (string) Override default SSD path
+  ## @param worker.lanes[].tolerations (array) Override default Toleration rules
+  ## @param worker.lanes[].affinity (dict) Override default Affinity rules
+  ## @param worker.lanes[].resources (dict) YAML merge with worker.resources
+  lanes:
+    - lane: default
+    #  hostname: ""
+    #  master: ""
+    #  ssd_path: ""
+    #  update: false
+    #  ssh_string: ""
+    #  cpus: 0
+    #  nogpu: false
+    #  gpus: ""
+    #  ssd_quota: 0
+    #  ssd_reserved: 0
+    #  nodeSelector: {}
+    #  tolerations: []
+    #  affinity: {}
+    #  resources:
+    #    requests:
+    #      nvidia.com/gpu: 1
+
+  # Deployment, DaemonSet or StatefulSet
+  workload_resource: DaemonSet
 
   replicaCount: 1
 
@@ -176,7 +216,7 @@ worker:
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
     tag: ""
- 
+
   imagePullSecrets: []
   nameOverride: ""
   fullnameOverride: ""
@@ -198,6 +238,7 @@ worker:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+    #   nvidia.com/gpu: 1
 
   autoscaling:
     enabled: false
