@@ -3,6 +3,21 @@ entries:
   cryosparc:
   - apiVersion: v2
     appVersion: v4.4.1
+    created: "2024-05-02T00:01:21.682588664Z"
+    dependencies:
+    - condition: oauth2-proxy.enabled
+      name: oauth2-proxy
+      repository: https://oauth2-proxy.github.io/manifests
+      version: '>=6.23.1'
+    description: Cryo-EM Single Particle Ab-Initio Reconstruction and Classification
+    digest: 10cf7623136303c9a4ce22c4c4c3742c9a3e0bfabb4da3535d66dbec3c4b6dbc
+    name: cryosparc
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/cryosparc-0.2.0/cryosparc-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: v4.4.1
     created: "2024-03-15T02:52:10.843843211Z"
     dependencies:
     - condition: oauth2-proxy.enabled
@@ -324,4 +339,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.1.0/omero-0.1.0.tgz
     version: 0.1.0
-generated: "2024-03-15T02:52:10.84386912Z"
+generated: "2024-05-02T00:01:21.682610715Z"
