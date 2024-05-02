@@ -174,7 +174,7 @@ worker:
   # minimum free space to leave on SSD (MB); 0 = no reserve
   ssd_reseved: 0
   # NOT USED name of lane to add worker to
-  #lane: ""
+  # lane: ""
   # force creation of a new lane if the lane specified does not exist
   new_lane: false
 
