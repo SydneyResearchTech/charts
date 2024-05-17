@@ -116,14 +116,6 @@ spec:
               [ -d "${HOME}" ] || { mkdir -p "${HOME}"; chmod 0700 "${HOME}"; }
               [ -d "${HOME}/.ssh" ] || { mkdir -p "${HOME}/.ssh"; chmod 0700 "${HOME}/.ssh"; }
               [ -f "${AUTHORIZED_KEYS}" ] || { cat "${SSH_PUB}" >"${AUTHORIZED_KEYS}"; chmod 0400 "${AUTHORIZED_KEYS}"; }
-              #echo "cryosparc master, wait for API ${CRYOSPARC_API}"
-              #until `wget -O/dev/null -q --content-on-error=off --method=OPTIONS --server-response ${CRYOSPARC_API} |grep -q 'HTTP/1.0 200 OK'`; do
-              #until `nc -z -w1 {{ $fullname }} 39002`; do
-              #  [ $TIMEOUT -le 0 ] && break
-              #  let "TIMEOUT=TIMEOUT-1"
-              #  sleep 1
-              #done
-              #[ $TIMEOUT -le 0 ] && { >&2 echo "cryosparc master, wait for API ${CRYOSPARC_API} FAILED"; }
           volumeMounts:
             - name: cryosparc-home
               mountPath: /home
@@ -154,9 +146,15 @@ spec:
               - key: {{ $ssh_secret.keys.public }}
                 path: ssh/id.pub
         {{- range $.Values.volumes }}
+        {{- if (hasKey . "ephemeral") }}
+        - name: {{ .name }}
+          ephemeral:
+            {{- toYaml .ephemeral | nindent 12 }}
+        {{- else }}
         - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+        {{- end }}
         {{- end }}
   {{- if eq $lane_default.workload_resource "StatefulSet" }}
   volumeClaimTemplates: []

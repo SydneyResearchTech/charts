@@ -37,7 +37,9 @@ def create_user(cli,user_id,email,password='',admin='False',username='',firstnam
         print(e)
         pass
 
-def main() -> int:
+def main(root_dir="/k8s-secrets") -> int:
+    watch_file = {}
+
     print("CRYOSPARC_COMMAND_CORE_PORT:",command_core_port)
     print("CRYOSPARC_MASTER_HOSTNAME:",host)
     print("CRYOSPARCM_UUID_EMAIL:",email_address)
@@ -45,28 +47,31 @@ def main() -> int:
     while True:
         try:
             cli = client.CommandClient(host=host, port=command_core_port)
-            break
-        except:
-            pass
 
-    user_id = cli.get_id_by_email(email_address)
-    _checksum = ''
-    while True:
-        if os.environ['CRYOSPARCM_CHECKSUM_USERS'] != _checksum:
+            user_id = cli.get_id_by_email(email_address)
+
             # cli.list_users()
             for root,dirs,files in os.walk('/k8s-secrets'):
                 for file in files:
                     if file.endswith('-users.csv'):
                         _file = os.path.join(root,file)
-                        print("processing file:",_file)
-                        with open(_file, newline='') as f:
-                            users = csv.DictReader(f)
-                            for user in users:
-                                create_user(cli,user_id,user['email'],user['password'],user['admin'],user['username'],user['firstname'],user['lastname'])
-            _checksum = os.environ['CRYOSPARCM_CHECKSUM_USERS']
-        time.sleep(15)
+                        if not (_file in watch_file and watch_file[_file] == os.stat(_file).st_mtime):
+                            print("processing file:",_file)
+                            _watch_file[_file] = os.stat(_file).st_mtime
+                            with open(_file, newline='') as f:
+                                users = csv.DictReader(f)
+                                for user in users:
+                                    create_user(cli,user_id,user['email'],user['password'],user['admin'],user['username'],user['firstname'],user['lastname'])
+
+        except Exception as e:
+            print(e)
+
+        time.sleep(30)
 
     return 0
 
 if __name__ == '__main__':
-    sys.exit(main())
+    if len(sys.argv) >1:
+        sys.exit(main(sys.argv[1]))
+    else:
+        sys.exit(main())

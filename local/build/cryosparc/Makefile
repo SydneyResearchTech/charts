@@ -6,6 +6,9 @@ ifndef LICENSE_ID
 $(error LICENSE_ID is not set)
 endif
 
+DOCKER_IMAGE_TAG ?= 0.3.0
+REGISTRY ?= localhost:3200
+
 #SUBDIRS := $(wildcard */.)
 DATE := $(shell date '+%Y%m%d%H%M%S')
 DOCKERFILES := $(shell find . -name Dockerfile -type f)
@@ -23,6 +26,6 @@ $(SUBDIRS) :
 	docker buildx build \
 		--build-arg="LICENSE_ID=$(LICENSE_ID)" \
 		--progress=plain \
-		--tag localhost:32000/$(@:%/=%):$${DOCKER_IMAGE_TAG} $@ 2>&1 \
+		--tag $(REGISTRY)/$(@:%/=%):$${DOCKER_IMAGE_TAG} $@ 2>&1 \
 		|tee $@log-buildx-$(DATE)
-	docker push localhost:32000/$(@:%/=%):$${DOCKER_IMAGE_TAG}
+	docker push $(REGISTRY)/$(@:%/=%):$${DOCKER_IMAGE_TAG}

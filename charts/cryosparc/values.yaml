@@ -26,10 +26,18 @@ volumes:
     storageClassName: ""
     selector: {}
   - name: ssd
-    accessModes: [ReadWriteOnce]
+    ephemeral:
+      volumeClaimTemplate:
+        metadata:
+          labels:
+          type: cryosparc-ssd
+      spec:
+        accessModes: [ReadWriteOnce]
+        storageClassName: ssd-hostpath
+        resources:
+          requests:
+            storage: 1Gi
     path: /cryosparc_ssd
-    size: 1Gi
-    storageClassName: local-storage
 
 ssh_secret:
   name: "cryosparc-ssh"
@@ -95,13 +103,15 @@ master:
   # WORKAROUND side container(s) for log management
   logs: [app, app_api, command_core, command_rtp, command_vis, database, supervisord]
 
+  workload_resource: Deployment
+
   replicaCount: 1
 
   image:
     repository: localhost:32000/cryosparc-master
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "0.3.0"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -132,7 +142,9 @@ master:
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
 
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
 
   tolerations: []
 
@@ -215,7 +227,7 @@ worker:
     repository: localhost:32000/cryosparc-worker
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: ""
+    tag: "0.3.0"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -226,6 +238,15 @@ worker:
   service:
     type: ClusterIP
     port: 2222
+
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    periodSeconds: 10
+    successThreshold: 1
+    tcpSocket:
+      port: sshd
+    timeoutSeconds: 1
 
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
@@ -246,7 +267,11 @@ worker:
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
     # targetMemoryUtilizationPercentage: 80
-  nodeSelector: {}
+
+  nodeSelector:
+    kubernetes.io/arch: amd64
+    kubernetes.io/os: linux
+
   tolerations: []
   #  - key
   affinity: {}

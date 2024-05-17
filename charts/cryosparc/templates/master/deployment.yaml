@@ -144,7 +144,13 @@ spec:
           secret:
             secretName: {{ include "cryosparc.fullname" . }}-users
         {{- range .Values.volumes }}
+        {{- if (hasKey . "ephemeral") }}
+        - name: {{ .name }}
+          ephemeral:
+            {{- toYaml .ephemeral | nindent 12 }}
+        {{- else }}
         - name: cryosparc-{{ .name }}
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+        {{- end }}
         {{- end }}

@@ -19,6 +19,7 @@ spec:
   {{- end }}
   {{- end }}
 {{- range .Values.volumes }}
+{{- if not (hasKey . "ephemeral") }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -38,4 +39,5 @@ spec:
   selector:
     {{- default "{}" .selector |toYaml |nindent 4 }}
   {{- end }}
+{{- end }}
 {{- end }}

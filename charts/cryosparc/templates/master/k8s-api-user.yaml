@@ -1,0 +1,15 @@
+{{- if not .Values.master.admin.secret.name -}}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "cryosparc.fullname" . }}-k8s-api
+  labels:
+    {{- include "cryosparc.labels" . | nindent 4 }}
+data:
+  # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
+  {{- $secretObj := (lookup "v1" "Secret" .Release.Namespace (print (include "cryosparc.fullname" .) "-k8s-api")) | default dict }}
+  {{- $secretData := (get $secretObj "data") | default dict }}
+  # set $password to existing secret data or generate a random one when not exists
+  {{- $password := (get $secretData "password") | default (randAlphaNum 64 | b64enc) }}
+  password: {{ $password | quote }}
+{{- end }}
