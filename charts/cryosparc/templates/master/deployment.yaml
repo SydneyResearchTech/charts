@@ -63,7 +63,7 @@ spec:
               name: cryosparc-mongodb
             {{- range .Values.volumes }}
             - mountPath: {{ .path }}
-              name: cryosparc-{{ .name }}
+              name: {{ .name }}
             {{- end }}
         - name: sync-users
           securityContext:
@@ -149,7 +149,7 @@ spec:
           ephemeral:
             {{- toYaml .ephemeral | nindent 12 }}
         {{- else }}
-        - name: cryosparc-{{ .name }}
+        - name: {{ .name }}
           persistentVolumeClaim:
             claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
         {{- end }}
