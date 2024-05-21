@@ -35,6 +35,8 @@ CryoSPARC common container volumes
 
 {{- define "cryosparc.master.volumeMounts" -}}
 {{ include "cryosparc.volumeMounts" . }}
+- mountPath: /tmp
+  name: tmp
 - mountPath: /cryosparc_master/config.sh
   name: cryosparc-config
   readOnly: true
@@ -47,6 +49,9 @@ CryoSPARC common container volumes
     name: {{ include "cryosparc.fullname" . }}
     items: [{key: passwd, path: passwd}]
 {{ include "cryosparc.volumes" . }}
+- name: tmp
+  emptyDir:
+    sizeLimit: 500Mi
 - name: cryosparc-config
   secret:
     secretName: {{ include "cryosparc.fullname" . }}
