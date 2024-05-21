@@ -30,13 +30,13 @@ volumes:
       volumeClaimTemplate:
         metadata:
           labels:
-          type: cryosparc-ssd
-      spec:
-        accessModes: [ReadWriteOnce]
-        storageClassName: ssd-hostpath
-        resources:
-          requests:
-            storage: 1Gi
+            type: cryosparc-ssd
+        spec:
+          accessModes: [ReadWriteOnce]
+          storageClassName: ssd-hostpath
+          resources:
+            requests:
+              storage: 1Gi
     path: /cryosparc_ssd
   - name: empiar-10025-subset
     accessModes: [ReadWriteMany]
@@ -66,18 +66,7 @@ master:
     users: []
       # - {email: 'admin@sydney.edu.au', password: 'password', admin: false, username: 'admin', firstname: 'Admin', lastname: 'User'}
 
-  # manage_users: false
-  # master_hostname: "decom"
   hostname: ""
-
-  # project_volumes:
-  # - mountPath: /cryosparc_projects
-  #   storageClassName: ""
-  #   volumeName: cryosparc-projects
-  #   accessModes:
-  #   - ReadWriteMany
-  #   resources:
-  #     requests: 1Gi
 
   command_core:
     command: python -c "import cryosparc_command.command_core as serv; serv.start(port=${CRYOSPARC_COMMAND_CORE_PORT})"
@@ -110,7 +99,7 @@ master:
   # WORKAROUND side container(s) for log management
   logs: [app, app_api, command_core, command_rtp, command_vis, database, supervisord]
 
-  workload_resource: Deployment
+  workload_resource: StatefulSet
 
   # Helm tests to enable in triggered operation.
   # NB: Tests can utilise considerable resources over extended periods.
@@ -201,7 +190,7 @@ worker:
   # NOT USED name of lane to add worker to
   # lane: ""
   # force creation of a new lane if the lane specified does not exist
-  new_lane: false
+  new_lane: true
 
   # Worker node lane and lane specific settings/over-rides
   ## @param worker.lanes (array[dict]) Lane specific settings

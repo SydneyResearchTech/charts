@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: {{ .Values.master.workload_resource }}
 metadata:
   name: {{ include "cryosparc.fullname" . }}
   labels:
@@ -11,6 +11,9 @@ spec:
   selector:
     matchLabels:
       {{- include "cryosparc.selectorLabels" . | nindent 6 }}
+  {{- if eq .Values.master.workload_resource "StatefulSet" }}
+  serviceName: {{ include "cryosparc.fullname" . }}m
+  {{- end }}
   template:
     metadata:
       {{- with .Values.master.podAnnotations }}
@@ -154,3 +157,22 @@ spec:
             claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
         {{- end }}
         {{- end }}
+  {{- if eq .Values.master.workload_resource "StatefulSet" }}
+  volumeClaimTemplates:
+  - metadata:
+      name: cryosparc-mongodb
+    spec:
+      {{- with .Values.master.mongodb.volume }}
+      accessModes:
+        {{- .accessModes |toYaml |nindent 8 }}
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: {{ .size }}
+      {{- include "cryosparc.storageClassName" (dict "vol" . "global" $.Values.global) |nindent 6 }}
+      {{- if .selector }}
+      selector:
+        {{ .selector |toYaml |nindent 8 }}
+      {{- end }}
+      {{- end }}
+  {{- end }}

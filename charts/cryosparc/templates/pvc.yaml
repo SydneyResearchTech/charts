@@ -1,3 +1,4 @@
+{{- if ne .Values.master.workload_resource "StatefulSet" -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -18,6 +19,7 @@ spec:
     {{ .selector |toYaml |nindent 4 }}
   {{- end }}
   {{- end }}
+{{- end -}}
 {{- range .Values.volumes }}
 {{- if not (hasKey . "ephemeral") }}
 ---
