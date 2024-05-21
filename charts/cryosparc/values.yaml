@@ -19,7 +19,7 @@ project_container:
 
 volumes:
   - name: projects
-    accessModes: []
+    accessModes: [ReadWriteMany]
     path: /cryosparc_projects
     persistenVolumeClaimName: ""
     size: 1Gi
@@ -38,6 +38,13 @@ volumes:
           requests:
             storage: 1Gi
     path: /cryosparc_ssd
+  - name: empiar-10025-subset
+    accessModes: [ReadWriteMany]
+    path: /bulk5/data/EMPIAR/10025/data/empiar_10025_subset
+    persistenVolumeClaimName: ""
+    size: 1Gi
+    storageClassName: ""
+    selector: {}
 
 ssh_secret:
   name: "cryosparc-ssh"
@@ -105,13 +112,19 @@ master:
 
   workload_resource: Deployment
 
+  # Helm tests to enable in triggered operation.
+  # NB: Tests can utilise considerable resources over extended periods.
+  tests:
+    extensive_workflow_benchmark_enabled: false
+
   replicaCount: 1
 
   image:
+    # NB: This will need to align with your local repository.
     repository: localhost:32000/cryosparc-master
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.3.0"
+    tag: "0.1.0"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -224,10 +237,11 @@ worker:
   replicaCount: 1
 
   image:
+    # NB: This will need to align with your local repository.
     repository: localhost:32000/cryosparc-worker
     pullPolicy: IfNotPresent
     # Overrides the image tag whose default is the chart appVersion.
-    tag: "0.3.0"
+    tag: "0.1.0"
 
   imagePullSecrets: []
   nameOverride: ""
@@ -285,17 +299,18 @@ serviceAccount:
   # If not set and create is true, a name is generated using the fullname template
   name: ""
 
+# NB: The fsGroup and container user ID need to match for cryosparcm administration operations to work.
 podSecurityContext:
-  # fsGroup: 2000
+  fsGroup: 1001
   runAsUser: 1001
   runAsGroup: 1001
 
-securityContext: {}
-  # capabilities:
-  #   drop:
-  #   - ALL
-  # readOnlyRootFilesystem: true
-  # runAsNonRoot: true
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
   # runAsUser: 1000
 
 ingress:

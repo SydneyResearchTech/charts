@@ -8,6 +8,7 @@ endif
 
 DOCKER_IMAGE_TAG ?= 0.3.0
 REGISTRY ?= localhost:3200
+CUDA_VERSION ?= 12.2.2
 
 #SUBDIRS := $(wildcard */.)
 DATE := $(shell date '+%Y%m%d%H%M%S')
@@ -24,6 +25,7 @@ $(SUBDIRS) :
 	[[ -z $$DOCKER_IMAGE_TAG ]] && \
 		DOCKER_IMAGE_TAG="$$(sed -n 's/^ARG\s\+DOCKER_IMAGE_TAG=\(.*\)$$/\1/p' $@Dockerfile)"
 	docker buildx build \
+		--build-arg="CUDA_VER=$(CUDA_VERSION)" \
 		--build-arg="LICENSE_ID=$(LICENSE_ID)" \
 		--progress=plain \
 		--tag $(REGISTRY)/$(@:%/=%):$${DOCKER_IMAGE_TAG} $@ 2>&1 \

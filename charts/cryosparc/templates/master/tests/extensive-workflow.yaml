@@ -1,13 +1,14 @@
+{{- if .Values.master.tests.extensive_workflow_benchmark_enabled -}}
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: {{ include "cryosparc.fullname" . }}-extensive-workflow-bench
   labels:
     {{- include "cryosparc.labels" . | nindent 4 }}
-  annotations: {}
-  #  "helm.sh/hook": post-install
-  #  "helm.sh/hook-weight": "-5"
-  #  "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   template:
     metadata:
@@ -35,3 +36,4 @@ spec:
       restartPolicy: Never
       volumes:
         {{- include "cryosparc.master.volumes" . |nindent 8 }}
+{{- end }}

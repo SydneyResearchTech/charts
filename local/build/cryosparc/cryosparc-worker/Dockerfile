@@ -1,4 +1,5 @@
-FROM nvidia/cuda:11.7.1-base-ubuntu22.04
+ARG CUDA_VER=12.2.2
+FROM nvidia/cuda:${CUDA_VER}-base-ubuntu22.04
 ARG LICENSE_ID
 ARG CRYOSPARC_VERSION=v4.4.1
 ARG DOCKER_IMAGE_TAG=0.1.0

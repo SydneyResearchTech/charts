@@ -45,14 +45,14 @@ spec:
             - {name: vis, containerPort: 39003, protocol: TCP}
             - {name: rtp, containerPort: 39005, protocol: TCP}
             - {name: api, containerPort: 39006, protocol: TCP}
-          #livenessProbe:
-          #  httpGet:
-          #    path: /
-          #    port: http
-          #readinessProbe:
-          #  httpGet:
-          #    path: /
-          #    port: http
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
           resources:
             {{- toYaml .Values.master.resources | nindent 12 }}
           volumeMounts:
