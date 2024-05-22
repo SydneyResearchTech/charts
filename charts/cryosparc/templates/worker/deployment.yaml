@@ -123,7 +123,7 @@ spec:
               mountPath: /k8s-secrets
               readOnly: true
       nodeSelector:
-        {{- toYaml (merge $lane_default.nodeSelector (default (dict) .nodeSelector)) | nindent 8 }}
+        {{- toYaml (merge (default (dict) .nodeSelector) $lane_default.nodeSelector) | nindent 8 }}
       {{- with (default $lane_default.affinity .affinity) }}
       affinity:
         {{- toYaml . | nindent 8 }}
