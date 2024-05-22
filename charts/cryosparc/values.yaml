@@ -40,7 +40,7 @@ volumes:
     path: /cryosparc_ssd
   - name: empiar-10025-subset
     accessModes: [ReadWriteMany]
-    path: /bulk5/data/EMPIAR/10025/data/empiar_10025_subset
+    path: /bulk5/data/EMPIAR/10025/data
     persistenVolumeClaimName: ""
     size: 1Gi
     storageClassName: ""

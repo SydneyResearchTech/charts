@@ -3,6 +3,134 @@
 | Key | Type | Default | Description |
 | --- | ---- | ------- | ----------- |
 
+## Setup
+
+The CryoSPARC Helm template has been developed to allow a flexible deployment methodology.
+Within the University of Sydney there are several deployment use cases, however this can be too cumbersome to document.
+Below are the primary use cases with configuration snippets.
+
+1. Ephemeral CryoSPARC cluster.
+   Short lived cluster for specific purpose, short project, testing, development, etc...
+2. Long operational cluster.
+   Consistent usage and long lived deployment with site administration, application life cycle management, etc...
+   *NB:* Make sure to read the section on `Reserving a PersistentVolume`. This will be very important if for any reason the
+   persistent volume claim (PVC) is deleted and you need to re-bind the existing persistent volume (PV) to your new deployment.
+3. Edge compute, pre-processing, CryoSPARC Live
+4. Compute host dedicated to CryoSPARC.
+   A one-to-one mapping of CryoSPARC worker node to compute host. Dedicated use of GPU(s).
+5. GPU(s) are shared, host is configured for Multi-Instance GPU (MIG), etc...
+
+## 2. Long operational cluster
+
+Recommendations:
+* Manually create persistent volume claims and reserve for specific purpose.
+  This provides a more stable volume mapping in cases where persistent volume claims (PVCs) could be deleted,
+  such as a full helm redeployment.
+
+```bash
+# List available storage classes
+kubectl get sc
+
+# EDIT AS REQUIRED; Deploy PVC(s)
+cat <<EOT |kubectl apply -f -
+---
+# Create volume for testing data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cryosparc-empiar-10025-subset
+  namespace: cryosparc
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs
+  volumeMode: Filesystem
+---
+# Create default projects volume
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cryosparc-projects
+  namespace: cryosparc
+spec:
+  accessModes: [ReadWriteMany]
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: nfs
+  volumeMode: Filesystem
+EOT
+```
+
+* Configuration snippets for Helm deployment values.
+
+```yaml
+volumes:
+- name: projects
+  accessModes: [ReadWriteMany]
+  path: /cryosparc_projects
+  persistenVolumeClaimName: "cryosparc-projects"
+  size: 1Gi
+  storageClassName: ""
+- name: empiar-10025-subset
+  accessModes: [ReadWriteMany]
+  path: /bulk5/data/EMPIAR/10025/data
+  persistenVolumeClaimName: "cryosparc-projects"
+  size: 1Gi
+  storageClassName: ""
+```
+
+## Reserving a PersistentVolume
+
+```bash
+PV=pvc-448c244a-2460-4564-9bb8-36028098c866
+
+kubectl patch pv $PV --type json -p '[{"op": "remove", "path": "/spec/claimRef"}]'
+
+kubectl patch pv $PV --type json -p '[{"op": "replace", "path": "/spec/claimRef", "value": {"name": "cryosparc-projects", "namespace": "cryosparc"}}]'
+
+
+cat <<EOT |kubectl apply -f -
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cryosparc-mongodb
+spec:
+  accessModes: [ReadWriteOnce]
+  capacity:
+    storage: 10Gi
+  claimRef:
+    name: cryosparc-mongodb-cryosparc-0
+    namespace: cryosparc
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: "manual"
+  volumeMode: Filesystem
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cryosparc-projects
+spec:
+  storageClassName: ""
+  claimRef:
+    name: cryosparc-projects
+    namespace: cryosparc
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cryosparc-empiar-10025-subset
+spec:
+  storageClassName: ""
+  claimRef:
+    name: cryosparc-empiar-10025-subset
+    namespace: cryosparc
+EOT
+```
+
 ## Minimum requirements
 
 [To run the full test suit.](https://guide.cryosparc.com/setup-configuration-and-management/hardware-and-system-requirements)
