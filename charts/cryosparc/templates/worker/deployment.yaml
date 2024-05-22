@@ -122,10 +122,8 @@ spec:
             - name: secrets
               mountPath: /k8s-secrets
               readOnly: true
-      {{- with (default $lane_default.nodeSelector .nodeSelector) }}
       nodeSelector:
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
+        {{- toYaml (merge $lane_default.nodeSelector (default (dict) .nodeSelector)) | nindent 8 }}
       {{- with (default $lane_default.affinity .affinity) }}
       affinity:
         {{- toYaml . | nindent 8 }}
@@ -159,4 +157,4 @@ spec:
   {{- if eq $lane_default.workload_resource "StatefulSet" }}
   volumeClaimTemplates: []
   {{- end }}
-{{- end }}
+{{ end }}
