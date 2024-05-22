@@ -17,7 +17,7 @@
 apiVersion: apps/v1
 kind: {{ $lane_default.workload_resource }}
 metadata:
-  name: {{ $fullname }}w-{{ .lane }}
+  name: {{ $fullname }}w-{{ lower .lane }}
   labels:
     {{- $labels | nindent 4 }}
 spec:
@@ -73,7 +73,7 @@ spec:
             - {name: CRYOSPARC_GPUS, value: {{ .gpus |default $lane_default.gpus |quote }}}
             - {name: CRYOSPARC_SSDQUOTA, value: {{ include "cryosparc.w.ssd_quota" (default $lane_default.ssd_quota .ssd_quota) |quote }}}
             - {name: CRYOSPARC_SSDRESERVE, value: {{ include "cryosparc.w.ssd_reserved" (default $lane_default.ssd_reserved .ssd_reserved) |quote }}}
-            - {name: CRYOSPARC_LANE, value: {{ .lane |default $lane_default.lane |quote }}}
+            - {name: CRYOSPARC_LANE, value: {{ .lane |quote }}}
             - {name: CRYOSPARC_NEWLANE, value: {{ .new_lane |default $lane_default.new_lane |ternary "true" "" |quote }}}
           ports:
             - name: sshd
