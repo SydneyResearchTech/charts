@@ -95,6 +95,14 @@ master:
       size: 500Mi
       storageClassName: ""
       selector: {}
+    backup:
+      enabled: false
+      dir: "${CRYOSPARC_DB_PATH}/backup"
+      file: "cryosparc_backup_$(date '+%Y%m%d%H%M%S').archive"
+      # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax
+      schedule: "0 3 * * *"
+      # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#starting-deadline
+      startingDeadlineSeconds: 3600
 
   # WORKAROUND side container(s) for log management
   logs: [app, app_api, command_core, command_rtp, command_vis, database, supervisord]

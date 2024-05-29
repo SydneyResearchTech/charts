@@ -1,0 +1,30 @@
+{{- if and .Values.master.enabled .Values.master.mongodb.backup.enabled -}}
+{{- $image := printf "%s:%s" .Values.master.image.repository (.Values.master.image.tag | default .Chart.AppVersion) -}}
+{{- $podSecurityContext := .Values.podSecurityContext -}}
+{{- $securityContext := .Values.securityContext -}}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "cryosparc.fullname" . }}-mongodb-backup
+  labels:
+    {{- include "cryosparc.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.master.mongodb.backup }}
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext:
+            {{- toYaml $podSecurityContext | nindent 12 }}
+          containers:
+          - name: mongodb-backup
+            securityContext:
+              {{- toYaml $securityContext | nindent 14 }}
+            image: "{{ $image }}"
+            args: ["cryosparcm","backup","--dir=\"{{ .dir }}\"","--file={{ .file }}"]
+          restartPolicy: OnFailure
+  schedule: {{ .schedule |quote }}
+  startingDeadlineSeconds: {{ .startingDeadlineSeconds }}
+  {{- end }}
+{{- end }}
