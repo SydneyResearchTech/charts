@@ -12,7 +12,7 @@ base_port: "39000"
 project_container:
   dir: "/cryosparc_projects"
   accessModes: []
-  persistenVolumeClaimName: ""
+  persistentVolumeClaimName: ""
   size: 1Gi
   storageClassName: ""
   selector: {}
@@ -21,7 +21,7 @@ volumes:
   - name: projects
     accessModes: [ReadWriteMany]
     path: /cryosparc_projects
-    persistenVolumeClaimName: ""
+    persistentVolumeClaimName: ""
     size: 1Gi
     storageClassName: ""
     selector: {}
@@ -41,7 +41,7 @@ volumes:
   - name: empiar-10025-subset
     accessModes: [ReadWriteMany]
     path: /bulk5/data/EMPIAR/10025/data
-    persistenVolumeClaimName: ""
+    persistentVolumeClaimName: ""
     size: 1Gi
     storageClassName: ""
     selector: {}
@@ -97,12 +97,17 @@ master:
       selector: {}
     backup:
       enabled: false
-      dir: "${CRYOSPARC_DB_PATH}/backup"
       file: "cryosparc_backup_$(date '+%Y%m%d%H%M%S').archive"
       # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#schedule-syntax
       schedule: "0 3 * * *"
       # https://kubernetes.io/docs/concepts/workloads/controllers/cron-jobs/#starting-deadline
       startingDeadlineSeconds: 3600
+      # volume settings for backup(s)
+      accessModes: [ReadWriteOnce]
+      size: 1Gi
+      persistentVolumeClaimName: ""
+      storageClassName: ""
+      selector: {}
 
   # WORKAROUND side container(s) for log management
   logs: [app, app_api, command_core, command_rtp, command_vis, database, supervisord]

@@ -1,5 +1,18 @@
 {{/*
 */}}
+{{- define "cryosparc.volume" -}}
+- name: {{ .name }}
+  {{- if (hasKey . "ephemeral") }}
+  ephemeral:
+    {{- toYaml .ephemeral |nindent 4 }}
+  {{- else }}
+  persistentVolumeClaim:
+    claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+  {{- end }}
+{{- end }}
+
+{{/*
+*/}}
 {{- define "cryosparc.master.service" -}}
 {{- end }}
 

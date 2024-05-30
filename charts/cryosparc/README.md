@@ -71,13 +71,13 @@ volumes:
 - name: projects
   accessModes: [ReadWriteMany]
   path: /cryosparc_projects
-  persistenVolumeClaimName: "cryosparc-projects"
+  persistentVolumeClaimName: "cryosparc-projects"
   size: 1Gi
   storageClassName: ""
 - name: empiar-10025-subset
   accessModes: [ReadWriteMany]
   path: /bulk5/data/EMPIAR/10025/data
-  persistenVolumeClaimName: "cryosparc-projects"
+  persistentVolumeClaimName: "cryosparc-projects"
   size: 1Gi
   storageClassName: ""
 ```
