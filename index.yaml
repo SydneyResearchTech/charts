@@ -3,6 +3,25 @@ entries:
   cryosparc:
   - apiVersion: v2
     appVersion: v4.4.1
+    created: "2024-05-30T06:37:26.888114629Z"
+    dependencies:
+    - condition: oauth2-proxy.enabled
+      name: oauth2-proxy
+      repository: https://oauth2-proxy.github.io/manifests
+      version: '>=6.23.1'
+    description: Cryo-EM Single Particle Ab-Initio Reconstruction and Classification
+    digest: 53a8ed2787c8737afbb2e4e30d92ee73e30f001985fe3dd83ee794cf83d489c1
+    maintainers:
+    - email: dean.taylor@sydney.edu.au
+      name: dean-taylor
+      url: https://au.linkedin.com/in/dean-taylor-a8699238
+    name: cryosparc
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/cryosparc-0.6.2/cryosparc-0.6.2.tgz
+    version: 0.6.2
+  - apiVersion: v2
+    appVersion: v4.4.1
     created: "2024-05-30T06:03:13.342143197Z"
     dependencies:
     - condition: oauth2-proxy.enabled
@@ -567,4 +586,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.1.0/omero-0.1.0.tgz
     version: 0.1.0
-generated: "2024-05-30T06:03:13.342239818Z"
+generated: "2024-05-30T06:37:26.888233571Z"
