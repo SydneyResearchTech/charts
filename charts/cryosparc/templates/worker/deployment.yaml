@@ -151,7 +151,7 @@ spec:
         {{- else }}
         - name: {{ .name }}
           persistentVolumeClaim:
-            claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistenVolumeClaimName }}
+            claimName: {{ default (printf "%s-%s" $.Release.Name .name) .persistentVolumeClaimName }}
         {{- end }}
         {{- end }}
   {{- if eq $lane_default.workload_resource "StatefulSet" }}

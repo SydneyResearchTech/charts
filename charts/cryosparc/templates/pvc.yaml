@@ -21,7 +21,7 @@ spec:
   {{- end }}
 {{- end -}}
 {{- range .Values.volumes }}
-{{- if and (not .persistenVolumeClaimName) (not (hasKey . "ephemeral")) }}
+{{- if and (not .persistentVolumeClaimName) (not (hasKey . "ephemeral")) }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
