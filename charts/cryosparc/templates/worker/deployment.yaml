@@ -56,14 +56,10 @@ spec:
           env:
             - {name: CRYOSPARC_LICENSE_ID, value: {{ $license_id |quote }}}
             - {name: CRYOSPARC_PORT, value: {{ $base_port |quote }}}
-            {{- if eq $lane_default.workload_resource "DaemonSet" }}
             - name: CRYOSPARC_HOSTNAME
               valueFrom:
                 fieldRef:
-                  fieldPath: status.hostIP
-            {{- else }}
-            - {name: CRYOSPARC_HOSTNAME, value: {{ .hostname |default $lane_default.hostname |quote }}}
-            {{- end }}
+                  fieldPath: status.podIP
             - {name: CRYOSPARC_MASTER, value: {{ default (printf "%s%s" $fullname "m") .master |quote }}}
             - {name: CRYOSPARC_SSDPATH, value: {{ .ssd_path |default $lane_default.ssd_path  |quote }}}
             - {name: CRYOSPARC_UPDATE, value: {{ .update |default $lane_default.update |ternary "true" "" |quote }}}
