@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+SRCD="$1"
+shift
+
+TMPD=$(mktemp -d)
+trap "rm -rf $TMPD" EXIT
+
+# Sanity checks
+[[ -d "$SRCD" ]] || { >&2 echo ERROR: "$@" not a directory.; exit 127; }
+
+[[ -f .snyk ]] && cp .snyk "$TMPD"
+
+CHARTS=()
+TMP_P=''
+while IFS= read -r -d '' line; do
+	CHART_PATH="$(dirname "$line")"
+	if [[ -z $TMP_P ]]; then
+		TMP_P="$CHART_PATH"
+	elif [[ $CHART_PATH == $TMP_P* ]]; then
+	       continue
+	fi
+	CHARTS+=($CHART_PATH)
+done < <(find "$SRCD" -name Chart.yaml -print0)
+#printf "%s\n" "${CHARTS[@]}"
+
+for CHART_PATH in "${CHARTS[@]}"; do
+	CHART_NAME="$(basename "$CHART_PATH")"
+	CHART_DIR="${TMPD}/$(dirname "$CHART_PATH")"
+	CHART_VALUES=".snyk.d/${CHART_PATH}/values.yaml"
+
+	HELM_TEMPLATE_OPTS=""
+	[[ -f $CHART_VALUES ]] && HELM_TEMPLATE_OPTS="${HELM_TEMPLATE_OPTS} --values=$CHART_VALUES"
+	mkdir -p "$CHART_DIR"
+
+	#echo helm template $CHART_NAME "$CHART_PATH"
+	helm dependency build "$CHART_PATH" --skip-refresh >/dev/null
+	helm template $CHART_NAME "$CHART_PATH"${HELM_TEMPLATE_OPTS} > "${CHART_DIR}/${CHART_NAME}.yaml"
+done
+
+cd "$TMPD"
+snyk iac test "$@" --severity-threshold=medium

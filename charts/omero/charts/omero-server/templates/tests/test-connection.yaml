@@ -7,7 +7,7 @@ metadata:
   annotations:
     "helm.sh/hook": test
     "helm.sh/hook-weight": "5"
-    #"helm.sh/hook-delete-policy": hook-succeeded,hook-failed
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
   containers:
     - name: busybox
@@ -17,4 +17,6 @@ spec:
         - |
           nc -zvw1 {{ include "omero-server.fullname" . }} {{ .Values.service.port }}
           nc -zvw1 {{ include "omero-server.fullname" . }} 4064
+      securityContext:
+        {{- include "omero-web.securityContext" . | nindent 8 }}
   restartPolicy: Never

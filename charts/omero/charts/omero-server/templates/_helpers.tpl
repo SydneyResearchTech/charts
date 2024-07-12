@@ -1,6 +1,19 @@
 # omero/charts/omero-server/templates/_helpers.tpl
 #
-{{- define "omero-server.conf" }}
+{{- define "omero-server.runAsUser" -}}
+{{- default (default "1000" .Values.podSecurityContext.runAsUser) .Values.securityContext.runAsUser }}
+{{- end }}
+
+{{- define "omero-server.securityContext" -}}
+capabilities:
+  drop: [ALL]
+readOnlyRootFilesystem: true
+runAsNonRoot: true
+runAsUser: {{ include "omero-server.runAsUser" . }}
+allowPrivilegeEscalation: false
+{{- end }}
+
+{{- define "omero-server.conf" -}}
 {{- $dictIn := . }}
 {{- range (keys $dictIn |sortAlpha) }}
 {{- if kindIs "map" (get $dictIn .) }}

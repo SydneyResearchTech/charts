@@ -80,14 +80,14 @@ spec:
       {{- range $n,$p := .Values.omeroLogFiles }}
         - name: {{ $n }}-log
           image: busybox
-          securityContext:
-            {{- toYaml $.Values.securityContext | nindent 12 }}
           command: ["sh","-c"]
           args:
             - |
               exec tail -F -n 1000 "${LOG_FILE}"
           env:
             - {name: LOG_FILE, value: {{ $p }}}
+          securityContext:
+            {{- include "omero-server.securityContext" $ | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/omero/server/OMERO.server/var/log
               name: logs
@@ -109,6 +109,8 @@ spec:
               #done
           env:
             {{- include "omero.postgresql.environmentVariables" . | nindent 12 }}
+          securityContext:
+            {{- include "omero-server.securityContext" . | nindent 12 }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

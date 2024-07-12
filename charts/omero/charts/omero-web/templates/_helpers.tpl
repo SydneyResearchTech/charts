@@ -1,3 +1,15 @@
+{{- define "omero-web.runAsUser" -}}
+{{- default (default "1000" .Values.podSecurityContext.runAsUser) .Values.securityContext.runAsUser }}
+{{- end }}
+
+{{- define "omero-web.securityContext" -}}
+capabilities:
+  drop: [ALL]
+readOnlyRootFilesystem: true
+runAsNonRoot: true
+runAsUser: {{ include "omero-web.runAsUser" . }}
+allowPrivilegeEscalation: false
+{{- end }}
 
 {{- define "omero-web.server_list" -}}
 {{- if not .Values.omero.web.server_list }}

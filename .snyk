@@ -1,0 +1,15 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.0
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-CC-K8S-5:
+    - '*':
+        reason: Container has no CPU limit N/A
+        expires: 9999-08-09T04:25:48.238Z
+        created: 2024-07-10T04:25:48.239Z
+  SNYK-CC-K8S-42:
+    - '*':
+        reason: The image policy does not prevent image reuse N/A
+        expires: 9999-08-09T04:25:48.238Z
+        created: 2024-07-10T04:25:48.239Z
+patch: {}

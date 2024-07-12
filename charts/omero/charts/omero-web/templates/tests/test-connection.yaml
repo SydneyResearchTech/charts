@@ -12,4 +12,6 @@ spec:
       image: busybox
       command: ['wget']
       args: ['{{ include "omero-web.fullname" . }}:{{ .Values.service.port }}']
+      securityContext:
+        {{- include "omero-web.securityContext" . | nindent 8 }}
   restartPolicy: Never

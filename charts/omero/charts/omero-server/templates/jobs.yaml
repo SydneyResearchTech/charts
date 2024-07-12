@@ -10,7 +10,7 @@ metadata:
   annotations:
     "helm.sh/hook": post-install
     "helm.sh/hook-weight": "-5"
-    #"helm.sh/hook-delete-policy": hook-succeeded
+    "helm.sh/hook-delete-policy": hook-succeeded
 spec:
   template:
     metadata:
@@ -37,6 +37,8 @@ spec:
             - mountPath: /scratch
               name: {{ include "omero-server.fullname" . }}-db-migration-cache
         - name: db-migration
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
           image: postgres
           command: ["sh","-c"]
           args:
@@ -84,6 +86,8 @@ spec:
       containers:
         - name: {{ .Chart.Name }}-db-setup
           image: "postgresql:latest"
+          securityContext:
+            {{- include "omero-server.securityContext" . | nindent 12 }}
           command: ["sh","-c"]
           args:
             - |

@@ -1,0 +1,6 @@
+---
+# OMERO values file for validation tests
+omero-web:
+  omero:
+    web:
+      secret_key: C13567D6-0551-4B31-A523-FC83B27C9CED
