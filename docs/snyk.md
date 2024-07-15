@@ -5,7 +5,7 @@
 Pre-requisites.
 
 * [Install Snyk cli](https://docs.snyk.io/snyk-cli/install-or-update-the-snyk-cli)
-* Snyk configuration for AU tenancy (if required)
+* [Snyk configuration for AU tenancy (if required)](https://docs.snyk.io/working-with-snyk/regional-hosting-and-data-residency)
   * `snyc config set endpoint https://app.au.snyk.io`
 * Snyk authenticate
   * `snyk auth`
