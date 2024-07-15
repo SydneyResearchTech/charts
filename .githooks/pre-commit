@@ -58,7 +58,7 @@ while IFS= read -r -d '' line; do
 		[[ $CHART_PATH == $TMP_P ]] && continue
 		if which snyk &>/dev/null; then
 			echo snyk-iac-test "$CHART_PATH"
-			bin/snyk-iac-test "$CHART_PATH" || EXIT_CODE=$?
+			bin/snyk-iac-test "$CHART_PATH" --severity-threshold=medium || EXIT_CODE=$?
 		fi
 		TMP_P="$CHART_PATH"
 	fi

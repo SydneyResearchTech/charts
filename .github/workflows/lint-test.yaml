@@ -36,6 +36,23 @@ jobs:
       - name: run chart-testing (lint)
         run: ct lint --config ct.yaml
 
+      - uses: snyk/actions/setup@master
+        id: snyk
+        #with:
+        #  snyk-version: v1.391.0
+        if: steps.list-changed.outputs.changed == 'true'
+
+      - name: create Kubernetes manifest for Snyk
+        run: |
+          EXIT_CODE=0
+          while IFS= read -r -d '' line; do
+            bin/snyk-iac-test "$line" --severity-threshold=medium || EXIT_CODE=$?
+          done < <(ct list-changed --config ct.yaml)
+          exit $EXIT_CODE
+        env:
+          TMPDIR: ${{ runner.temp }}
+        if: steps.list-changed.outputs.changed == 'true'
+
       - name: create kind cluster
         uses: helm/kind-action@v1.8.0
         if: steps.list-changed.outputs.changed == 'true'

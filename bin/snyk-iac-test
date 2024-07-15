@@ -26,17 +26,16 @@ done < <(find "$SRCD" -name Chart.yaml -print0)
 
 for CHART_PATH in "${CHARTS[@]}"; do
 	CHART_NAME="$(basename "$CHART_PATH")"
-	CHART_DIR="${TMPD}/$(dirname "$CHART_PATH")"
 	CHART_VALUES=".snyk.d/${CHART_PATH}/values.yaml"
 
 	HELM_TEMPLATE_OPTS=""
 	[[ -f $CHART_VALUES ]] && HELM_TEMPLATE_OPTS="${HELM_TEMPLATE_OPTS} --values=$CHART_VALUES"
-	mkdir -p "$CHART_DIR"
 
 	#echo helm template $CHART_NAME "$CHART_PATH"
-	helm dependency build "$CHART_PATH" --skip-refresh >/dev/null
-	helm template $CHART_NAME "$CHART_PATH"${HELM_TEMPLATE_OPTS} > "${CHART_DIR}/${CHART_NAME}.yaml"
+	helm dependency list "$CHART_PATH" |grep -q 'missing$' || \
+		helm dependency build "$CHART_PATH" --skip-refresh >/dev/null
+	helm template "$CHART_PATH"${HELM_TEMPLATE_OPTS} --output-dir "$TMPD"
 done
 
 cd "$TMPD"
-snyk iac test "$@" --severity-threshold=medium
+snyk iac test "$@"
