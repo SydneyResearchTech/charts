@@ -51,17 +51,20 @@ git diff-index --check --cached $against -- || exit $?
 #which helm &>/dev/null && helm lint .
 which ct &>/dev/null && { echo ct lint; ct lint || exit $?; }
 
+CHART_PATHS=( )
 TMP_P=''
 while IFS= read -r -d '' line; do
 	if [[ $line == "charts/"* ]]; then
 		CHART_PATH="$(echo $line |cut -d/ -f1-2)"
 		[[ $CHART_PATH == $TMP_P ]] && continue
-		if which snyk &>/dev/null; then
-			echo snyk-iac-test "$CHART_PATH"
-			bin/snyk-iac-test "$CHART_PATH" --severity-threshold=medium || EXIT_CODE=$?
-		fi
+		CHART_PATHS+=( "$CHART_PATH" )
 		TMP_P="$CHART_PATH"
 	fi
 done < <(git diff-index --cached --name-only $against |sort)
+
+if which snyk &>/dev/null && [[ ${#CHART_PATHS[@]} -ne 0 ]]; then
+	echo snyk-iac-test "${CHART_PATHS[@]}"  --severity-threshold=medium
+	bin/snyk-iac-test "${CHART_PATHS[@]}" --severity-threshold=medium || EXIT_CODE=$?
+fi
 
 exit $EXIT_CODE

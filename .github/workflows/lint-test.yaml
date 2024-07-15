@@ -37,19 +37,17 @@ jobs:
         run: ct lint --config ct.yaml
 
       - uses: snyk/actions/setup@master
-        id: snyk
-        #with:
-        #  snyk-version: v1.391.0
         if: steps.list-changed.outputs.changed == 'true'
 
-      - name: create Kubernetes manifest for Snyk
+      - name: run Snyk to check Kubernetes manifest file for issues
         run: |
           EXIT_CODE=0
           while IFS= read -r -d '' line; do
-            bin/snyk-iac-test "$line" --severity-threshold=medium || EXIT_CODE=$?
+            bin/snyk-iac-test "$line" --severity-threshold=medium --target-name=${{ vars.GITHUB_REPOSITORY }} || EXIT_CODE=$?
           done < <(ct list-changed --config ct.yaml)
           exit $EXIT_CODE
         env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           TMPDIR: ${{ runner.temp }}
         if: steps.list-changed.outputs.changed == 'true'
 
