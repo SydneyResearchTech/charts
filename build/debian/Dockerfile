@@ -1,5 +1,5 @@
-FROM debian:latest
-ARG DOCKER_IMAGE_TAG=latest
+FROM debian:12
+ARG DOCKER_IMAGE_TAG=1.0.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 
