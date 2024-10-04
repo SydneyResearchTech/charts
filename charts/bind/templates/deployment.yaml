@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "bind.fullname" . }}
+  labels:
+    {{- include "bind.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "bind.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "bind.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "bind.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          command: ["/usr/sbin/named"]
+          args: {{ include "bind.args" . }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: domain-tcp
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+            - name: domain
+              containerPort: {{ .Values.service.port }}
+              protocol: UDP
+          livenessProbe:
+            {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /var/lib/bind
+              name: bind-lib
+            - mountPath: /run/named
+              name: named-run
+            - mountPath: /var/cache/bind
+              name: bind-cache
+            - mountPath: /etc/bind/named.conf
+              name: named-conf
+              subPath: named.conf
+              readOnly: true
+            - mountPath: /etc/bind/named.conf.options
+              name: named-conf-options
+              subPath: named.conf.options
+              readOnly: true
+            - mountPath: /etc/bind/named.conf.secret.d
+              name: named-conf-secret-d
+              readOnly: true
+            - mountPath: /etc/bind/named.conf.d
+              name: named-conf-d
+              readOnly: true
+            # https://kb.isc.org/docs/aa-00722
+            - mountPath: /etc/bind/rndc.conf
+              name: rndc-conf
+              subPath: rndc.conf
+              readOnly: true
+            - mountPath: /etc/bind/rndc.key
+              name: rndc-key
+              subPath: rndc.key
+              readOnly: true
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      initContainers:
+        - name: init
+          image: busybox
+          command: ['sh','-c']
+          args:
+            - |
+              echo 'Copy /.k8s/config to /var/cache/bind'
+              echo '/.k8s/config listing'
+              ls -l /.k8s/config
+              echo 'Running copy'
+              cp -Lrn /.k8s/config/* /var/cache/bind
+          volumeMounts:
+            - mountPath: /var/cache/bind
+              name: bind-cache
+            - mountPath: /.k8s/config
+              name: k8s-config
+              readOnly: true
+      volumes:
+        - name: bind-lib
+          emptyDir: {}
+        - name: named-run
+          emptyDir: {}
+        - name: bind-cache
+          persistentVolumeClaim:
+            claimName: {{ include "bind.fullname" . | quote }}
+        - name: named-conf
+          configMap:
+            name: {{ include "bind.fullname" . }}
+            items: [{key: named.conf, path: named.conf}]
+        - name: named-conf-options
+          configMap:
+            name: {{ include "bind.fullname" . }}
+            items: [{key: named.conf.options, path: named.conf.options}]
+        - name: named-conf-secret-d
+          secret:
+            secretName: {{ include "bind.fullname" . | quote }}
+        - name: named-conf-d
+          configMap:
+            name: {{ include "bind.fullname" . }}-conf
+        - name: rndc-conf
+          configMap:
+            name: {{ include "bind.fullname" . }}
+            items: [{key: rndc.conf, path: rndc.conf}]
+        - name: rndc-key
+          secret:
+            secretName: {{ include "bind.fullname" . }}-rndc
+            items: [{key: rndc.key, path: rndc.key}]
+        - name: k8s-config
+          configMap:
+            name: {{ include "bind.fullname" . }}-zone
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

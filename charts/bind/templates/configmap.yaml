@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bind.fullname" . }}
+  labels:
+    {{- include "bind.labels" . | nindent 4 }}
+data:
+  named.conf: |
+    include "/etc/bind/named.conf.options";
+    include "/etc/bind/named.conf.local";
+    include "/etc/bind/named.conf.secret.d/*";
+    include "/etc/bind/named.conf.d/*";
+    include "/etc/bind/named.conf.default-zones";
+  named.conf.options: |
+    include "/etc/bind/rndc.key";
+    controls { inet 127.0.0.1 port 5953 allow { 127.0.0.1; } keys { "rndc-key"; }; };
+    options {
+      directory "/var/cache/bind";
+      allow-new-zones yes;
+      allow-query { any; };
+      #allow-query { 127.0.0.1; ::1; 10/8; 172.16/12; 192.168/16; fe80::/10; };
+      listen-on-v6 { any; };
+    {{- with .Values.named_options }}
+      dnssec-validation {{ .dnssec_validation }};
+    {{- if .forwarders }}
+      forwarders { {{ join "; " .forwarders }}; };
+    {{- end }}
+    {{- if .forward_only }}
+      forward only;
+    {{- end }}
+    {{- if .extra }}
+      {{- .extra | nindent 6 }}
+    {{- end }}
+    {{- end }}
+    };
+  rndc.conf: |
+    include "/etc/bind/rndc.key";
+    options {
+      default-key "rndc-key";
+      default-server 127.0.0.1;
+      default-port 5953;
+    };
+  {{- if .Values.rndc.conf }}
+    {{- .Values.rndc.conf | nindent 4 }}
+  {{- end }}
+{{- if .Values.named_zones }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bind.fullname" . }}-conf
+  labels:
+    {{- include "bind.labels" . | nindent 4 }}
+data:
+{{- range .Values.named_zones }}
+  {{ .name }}: |
+    zone {{ .name | quote }} {
+      type {{ .type }};
+      file {{ .file | default (print "db." .name) | quote }};
+      {{- .extra | nindent 6 }}
+    };
+{{- end }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "bind.fullname" . }}-zone
+  labels:
+    {{- include "bind.labels" . | nindent 4 }}
+data:
+{{- range .Values.named_zones }}
+  {{ .file | default (print "db." .name) }}: |
+    {{- .zone | nindent 6 }}
+{{- end }}
+{{- end }}
