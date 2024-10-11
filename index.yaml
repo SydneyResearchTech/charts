@@ -3,6 +3,20 @@ entries:
   bind:
   - apiVersion: v2
     appVersion: 9.18-24.04_beta
+    created: "2024-10-11T05:16:33.241172662Z"
+    description: ISC Bind DNS name service
+    digest: b17f8c274354ec40ed22eb5bec82312de2806ce2be9515754e8fcfb9005beff6
+    maintainers:
+    - email: dean.taylor@sydney.edu.au
+      name: dean-taylor
+      url: https://au.linkedin.com/in/dean-taylor-a8699238
+    name: bind
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/bind-0.1.1/bind-0.1.1.tgz
+    version: 0.1.1
+  - apiVersion: v2
+    appVersion: 9.18-24.04_beta
     created: "2024-10-04T05:31:25.222307456Z"
     description: ISC Bind DNS name service
     digest: 4dedbc1e04f429494b82380d2860314163370c4673c3df3d58448c6b26b0a38f
@@ -684,4 +698,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/omero-0.1.0/omero-0.1.0.tgz
     version: 0.1.0
-generated: "2024-10-04T05:31:25.22237393Z"
+generated: "2024-10-11T05:16:33.241327281Z"
