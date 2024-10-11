@@ -68,9 +68,9 @@ spec:
               name: named-conf-options
               subPath: named.conf.options
               readOnly: true
-            - mountPath: /etc/bind/named.conf.secret.d
-              name: named-conf-secret-d
-              readOnly: true
+            #- mountPath: /etc/bind/named.conf.secret.d
+            #  name: named-conf-secret-d
+            #  readOnly: true
             - mountPath: /etc/bind/named.conf.d
               name: named-conf-d
               readOnly: true
@@ -119,9 +119,9 @@ spec:
           configMap:
             name: {{ include "bind.fullname" . }}
             items: [{key: named.conf.options, path: named.conf.options}]
-        - name: named-conf-secret-d
-          secret:
-            secretName: {{ include "bind.fullname" . | quote }}
+        #- name: named-conf-secret-d
+        #  secret:
+        #    secretName: {{ include "bind.fullname" . | quote }}
         - name: named-conf-d
           configMap:
             name: {{ include "bind.fullname" . }}-conf
