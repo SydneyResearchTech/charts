@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "properties": {
+    "name": {"description": "The logical name of this instance of Orthanc", "type": "string"},
+    "storageDirectory": {
+      "description": "Path to the directory that holds the heavyweight files",
+      "type": "object"
+    },
+    "indexDirectory": {"description": "Path to the directory that holds the SQLite index", "type": "string"},
+    "temporaryDirectory": {"description": "Path to the directory where Orthanc stores its large temporary files", "type": "string"},
+    "storageCompression": {"description": "Enable the transparent compression of the DICOM instances", "type": "boolean"},
+    "maximumStorageSize": {"description": "Maximum size of the storage in MB", "type": "integer"},
+    "maximumStorageMode": {
+      "description": "Action to take when the maximum storage is reached",
+      "type": "string",
+      "enum": ["Recycle", "Reject"]
+    },
+    "luaScripts": {
+      "description": "List of paths to the custom Lua scripts that are to be loaded",
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "httpServer": {
+      "description": "Configuration of the HTTP server",
+      "type" : "object",
+      "properties": {
+        "enabled": {"description": "Enable the HTTP server", "type": "boolean"}
+      }
+    }
+  }
+}

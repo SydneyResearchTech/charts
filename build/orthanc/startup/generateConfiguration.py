@@ -19,7 +19,7 @@ if isEnvVarDefinedEmptyOrTrue("VERBOSE_STARTUP"):
 if isEnvVarDefinedEmptyOrTrue("BUNDLE_DEBUG"):
   logWarning("You're using a deprecated env-var, you should use VERBOSE_STARTUP instead of BUNDLE_DEBUG")
   enableVerboseModeForConfigGeneration()
-  
+
 
 ################# read all configuration files ################################
 configFiles = []
@@ -28,7 +28,7 @@ logInfo("Discovering configuration files from /etc/orthanc/*.json")
 for filePath in glob.glob("/etc/orthanc/*.json"):
   configFiles.append(filePath)
 
-logInfo("Discovering configuration files from /run/secrets/*.json")
+logInfo("Discovering configuration files from /.k8s/secrets/*.json")
 for filePath in glob.glob("/.k8s/secrets/*.json"):
   configFiles.append(filePath)
 
@@ -36,7 +36,7 @@ for filePath in configFiles:
   logInfo("reading configuration from " + filePath)
   with open(filePath, "r") as f:
     content = f.read()
-    
+
     # perform standard env var substitution before trying to read the json file (https://github.com/orthanc-server/orthanc-builder/issues/9)
     content = envsubst(content)
     try:
@@ -44,14 +44,14 @@ for filePath in configFiles:
       configFromFile = json.loads(cleanedContent)
     except:
       logError("Unable to parse Json file '{f}'; check syntax".format(f = filePath))
-    
+
     configurator.mergeConfigFromFile(configFromFile, filePath)
 
 ################# read all environment variables ################################
 
 logInfo("Analyzing environment variables")
 for envKey, envValue in os.environ.items():
-  
+
   configurator.mergeConfigFromEnvVar(envKey, envValue)
 
 ################# read all secrets ################################

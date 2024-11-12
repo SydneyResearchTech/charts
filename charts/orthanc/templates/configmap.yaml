@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "orthanc.fullname" . }}
+  labels:
+    {{- include "orthanc.labels" . | nindent 4 }}
+data:
+  orthanc.json: |-
+    {{- tpl (.Files.Get "conf/orthanc.json") . | nindent 4 }}
+  dicomweb.json: |-
+    {{- dict "DicomWeb" .Values.DicomWeb | toPrettyJson | nindent 4 }}

@@ -1,0 +1,16 @@
+{
+  "PostgreSQL": {
+    "EnableIndex": {{ .Values.PostgreSQL.EnableIndex }},
+    "EnableStorage": {{ .Values.PostgreSQL.EnableStorage }},
+    "MaximumConnectionRetries": {{ .Values.PostgreSQL.MaximumConnectionRetries }},
+    "ConnectionRetryInterval": {{ .Values.PostgreSQL.ConnectionRetryInterval }},
+    "IndexConnectionsCount": {{ .Values.PostgreSQL.IndexConnectionsCount }},
+    "TransactionMode": {{ .Values.PostgreSQL.TransactionMode | quote }},
+    "EnableVerboseLogs": {{ .Values.PostgreSQL.EnableVerboseLogs }},
+    "Port": {{ .Values.PostgreSQL.Port }},
+    "Host": {{ include "orthanc.postgresql.host" . | quote }},
+    "Database": {{ .Values.PostgreSQL.Database | quote }},
+    "Username": {{ .Values.PostgreSQL.Username | quote }},
+    "Password": {{ .PGPASSWORD | quote }}
+  }
+}

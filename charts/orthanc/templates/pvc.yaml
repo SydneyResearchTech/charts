@@ -1,0 +1,20 @@
+{{- if not .Values.storageDirectory.existingVolumeClaim -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "orthanc.fullname" . }}-storage
+  labels:
+    {{- include "orthanc.labels" . | nindent 4 }}
+spec:
+  {{- with .Values.storageDirectory.persistentVolumeClaim }}
+  accessModes:
+    {{- toYaml .accessModes | nindent 4 }}
+  volumeMode: Filesystem
+  resources:
+    requests:
+      storage: {{ .size }}
+  storageClassName: {{ .storageClassName | default $.Values.global.storageClassName }}
+  selector:
+    {{- toYaml (.selector | default dict) | nindent 4 }}
+  {{ end }}
+{{ end }}
