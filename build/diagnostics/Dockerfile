@@ -1,5 +1,5 @@
 FROM debian:unstable-slim
-ARG DOCKER_IMAGE_TAG=0.3.0
+ARG DOCKER_IMAGE_TAG=0.4.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -11,6 +11,7 @@ apt-get -y install \
  iperf3 \
  iproute2 \
  iputils-ping \
+ openssl \
  strace
 rm -rf /var/lib/apt/lists/*
 EOF
