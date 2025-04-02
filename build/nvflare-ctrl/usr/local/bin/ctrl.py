@@ -101,7 +101,7 @@ def readStartupKit(service, id=None):
 
     data = {}
     with zipfile.ZipFile(BytesIO(r.content), mode='r') as zf:
-        zf.extractall(pwd=bytes(_pin,'utf-8'))
+        # zf.extractall(pwd=bytes(_pin,'utf-8'))
         for _name in zf.namelist():
             if _name.endswith(('.py','.crt','.key','.pem','.sh','.json')):
                 _file = os.path.basename(_name)

@@ -1,5 +1,5 @@
 FROM python:3.9
-ARG DOCKER_IMAGE_TAG=1.0.0
+ARG DOCKER_IMAGE_TAG=1.1.0
 LABEL org.opencontainers.image.authors="dean.taylor@sydney.edu.au"
 
 COPY ./ /
