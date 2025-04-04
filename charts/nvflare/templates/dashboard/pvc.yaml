@@ -1,0 +1,23 @@
+{{- if not .Values.dashboard.persistence.existingVolumeClaim -}}
+{{- $storageClassName := (include "nvflare.dashboard.storageClassName" .) -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "nvflare.dashboard.fullname" . }}
+  labels:
+    {{- include "nvflare.dashboard.labels" . | nindent 4 }}
+spec:
+{{- with .Values.dashboard.persistence }}
+  accessModes:
+    {{- .accessModes | toYaml | nindent 4 }}
+  resources:
+    requests:
+      storage: {{ .storageSize }}
+  selector:
+    {{- .selector | toYaml | nindent 4 }}
+{{- if $storageClassName }}
+  {{ $storageClassName }}
+{{- end }}
+  volumeMode: Filesystem
+{{- end }}
+{{- end }}

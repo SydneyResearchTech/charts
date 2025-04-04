@@ -1,0 +1,116 @@
+{{- if .Values.overseer.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nvflare.fullname" . }}-overseer
+  labels:
+    {{- include "nvflare.overseer.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nvflare.overseer.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nvflare.overseer.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nvflare.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          command: [gunicorn]
+          args:
+            - --config=/workspace/startup/gunicorn.conf.py
+            - --keyfile=/workspace/startup/overseer.key
+            - --certfile=/workspace/startup/overseer.crt
+            - --ca-cert=/workspace/startup/rootCA.pem
+            - --access-logfile=-
+            - --disable-redirect-access-to-syslog
+            - --log-level=info
+          workingDir: /workspace/startup
+          env:
+            - {name: NVFL_OVERSEER_HEARTBEAT_TIMEOUT, value: "10"}
+            - {name: AUTHZ_FILE, value: /workspace/startup/rootCA.pem}
+            - {name: TMPDIR, value: /tmp}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.overseer.service.port }}
+              protocol: TCP
+          {{- with .Values.overseer.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.overseer.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmpdir
+              mountPath: /tmp
+            - name: conf
+              mountPath: /k8s-config/conf
+              readOnly: true
+            - name: x509
+              mountPath: /k8s-secrets/certs
+              readOnly: true
+          {{- with .Values.volumeMounts }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+            - name: startup
+              mountPath: /workspace/startup
+              readOnly: true
+      volumes:
+        - name: startup
+          secret:
+            secretName: {{ include "nvflare.overseer.fullname" . }}-startup
+        - name: tmpdir
+          emptyDir: {}
+        - name: conf
+          configMap:
+            name: {{ include "nvflare.overseer.fullname" . }}
+        - name: x509
+          secret:
+            secretName: {{ default (include "nvflare.overseer.fullname" .) .Values.overseer.certs.secretName }}
+      {{- with .Values.volumes }}
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

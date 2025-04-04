@@ -1,0 +1,123 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "nvflare.dashboard.fullname" . }}
+  labels:
+    {{- include "nvflare.dashboard.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "nvflare.dashboard.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "nvflare.dashboard.labels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "nvflare.serviceAccountName" . }}
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          command: ["/usr/local/bin/python3"]
+          args: ["nvflare/dashboard/wsgi.py"]
+          workingDir: "/opt/NVFlare"
+          env:
+            - {name: TMPDIR, value: "/tmp"}
+            - name: NVFL_CREDENTIAL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "nvflare.dashboard.fullname" . }}
+                  key: NVFL_CREDENTIAL
+            - {name: NVFL_WEB_ROOT, value: "/var/tmp/nvflare/dashboard"}
+            - {name: NVFL_WEB_PORT, value: {{ .Values.dashboard.service.port | quote }}}
+            # $NVFLARE_WEB_ROOT/cert/web.crt
+            # $NVFLARE_WEB_ROOT/cert/web.key
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.dashboard.image.repository }}:{{ .Values.dashboard.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.dashboard.service.port }}
+              protocol: TCP
+          {{- with .Values.dashboard.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.dashboard.readinessProbe }}
+          readinessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.dashboard.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmpdir
+              mountPath: /tmp
+            - name: dashboard
+              mountPath: /var/tmp/nvflare/dashboard
+        # TODO move to feature gate SidecarContainers v1.29 initContainers restart: Always
+        - name: ctrl
+          image: ghcr.io/sydneyresearchtech/nvflare-ctrl:1.1.0
+          command: [python, /usr/local/bin/ctrl.py]
+          env:
+            - name: NVFL_CREDENTIAL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "nvflare.dashboard.fullname" . }}
+                  key: NVFL_CREDENTIAL
+            - name: NVFL_PROJ_ADMIN_CREDENTIAL
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "nvflare.dashboard.fullname" . }}
+                  key: NVFL_PROJ_ADMIN_CREDENTIAL
+            - {name: K8S_NAMESPACE, value: {{ .Release.Namespace }}}
+            - {name: NVFL_OVERSEER_SECRET, value: {{ printf "%s-startup" (include "nvflare.overseer.fullname" .) }}}
+            - {name: NVFL_SERVER_SECRET, value: {{ printf "%s-startup" (include "nvflare.server.fullname" .) }}}
+            - {name: NVFL_SITE_SECRET, value: {{ printf "%s-site" (include "nvflare.site.fullname" .) }}}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: tmpdir
+              mountPath: /tmp
+            - name: dashboard
+              mountPath: /dashboard
+      volumes:
+        - name: tmpdir
+          emptyDir: {}
+        - name: dashboard
+          persistentVolumeClaim:
+            claimName: {{ include "nvflare.dashboard.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
