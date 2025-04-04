@@ -1,0 +1,28 @@
+{{- if .Values.overseer.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "nvflare.overseer.fullname" . }}
+  labels:
+    {{- include "nvflare.overseer.labels" . | nindent 4 }}
+data:
+  gunicorn.conf.py: |
+    import gunicorn_worker_healthcheck
+    healthcheck_bind = '0.0.0.0:8000'
+    healthcheck_require_workers = 1
+    healthcheck_directory = '/tmp'
+    healthcheck_filename = '.gunicorn.worker.{}'
+    gunicorn_worker_healthcheck.start(globals())
+
+    bind="0.0.0.0:8443"
+    cert_reqs=2
+    do_handshake_on_connect=True
+    timeout=30
+    worker_class="nvflare.ha.overseer.worker.ClientAuthWorker"
+    workers=1
+    wsgi_app="nvflare.ha.overseer.overseer:app"
+  privilege.yml: |
+    project_admin:
+      {{- .Values.project.admins | toYaml | nindent 6 }}
+  # signature.json:
+{{- end }}

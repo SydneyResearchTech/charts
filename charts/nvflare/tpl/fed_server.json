@@ -1,0 +1,28 @@
+{
+  "format_version": 2,
+  "servers": [
+    {
+      "name": "{{ .Values.project.name }}",
+      "service": {
+        "target": "server1:{{ .Values.server.service.fl.port }}",
+        "scheme": "grpc"
+      },
+      "admin_host": "server1",
+      "admin_port": {{ .Values.server.service.admin.port }},
+      "ssl_private_key": "/k8s-secrets/certs/{{ .Values.server.certs.keyfileName }}",
+      "ssl_cert": "/k8s-secrets/certs/{{ .Values.server.certs.certfileName }}",
+      "ssl_root_cert": "/k8s-secrets/certs/{{ .Values.server.certs.cacertName }}"
+    }
+  ],
+  "overseer_agent": {
+    "path": "nvflare.ha.overseer_agent.HttpOverseerAgent",
+    "args": {
+      "role": "server",
+      "overseer_end_point": {{ include "nvflare.server.overseer_endpoint" . | quote }},
+      "project": "{{ .Values.project.name }}",
+      "name": "server1",
+      "fl_port": "{{ .Values.server.service.fl.port }}",
+      "admin_port": "{{ .Values.server.service.admin.port }}"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "nvflare.fullname" . }}-ca
+spec:
+  isCA: true
+  commonName: nvflare-ca
+  secretName: {{ include "nvflare.fullname" . }}-ca
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ include "nvflare.fullname" . }}
+spec:
+  ca:
+    secretName: {{ include "nvflare.fullname" . }}-ca
+{{ end }}
