@@ -65,16 +65,14 @@ overseer:
     certfileName: tls.crt
     cacertName: ca.crt
   # ISSUE client auth enabled, no public path for probe
+  # https://github.com/NVIDIA/NVFlare/issues/240
+  # WORKAROUND add gunicorn_worker_healthcheck https://pypi.org/project/gunicorn_worker_healthcheck/
   livenessProbe:
-    httpGet:
-      path: /api/v1/heartbeat
-      port: http
-      scheme: HTTPS
+    tcpSocket:
+      port: 8443
   readinessProbe:
-    httpGet:
-      path: /api/v1/heartbeat
-      port: http
-      scheme: HTTPS
+    tcpSocket:
+      port: 8443
   ingress:
     enabled: false
 
@@ -94,10 +92,10 @@ server:
       port: 8003
   # ISSUE client auth enabled, no public path for probe
   livenessProbe:
-    grpc:
+    tcpSocket:
       port: 8002
   readinessProbe:
-    grpc:
+    tcpSocket:
       port: 8002
 
 site:
@@ -114,13 +112,24 @@ site:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+  # Additional volumes on the Site Deployment definition.
+  volumes: []
+  # - name: foo
+  #   persistentVolumeClaim:
+  #     claimName: nvflare-datasets
+
+  # Additional volumeMounts on the Site Deployment definition.
+  volumeMounts: []
+  # - name: foo
+  #   mountPath: "/workspace/foo"
+  #   readOnly: false
 
 # This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
 # This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
-  repository: localhost:32000/nvfl-min
+  repository: nvflare/nvflare
   # This sets the pull policy for images.
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
@@ -232,6 +241,7 @@ volumeMounts: []
 
 nodeSelector:
   kubernetes.io/arch: amd64
+  kubernetes.io/os: linux
 
 tolerations: []
 
