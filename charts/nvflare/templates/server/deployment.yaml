@@ -75,9 +75,6 @@ spec:
           volumeMounts:
             - name: tmpdir
               mountPath: /tmp
-            - name: x509
-              mountPath: /k8s-secrets/certs
-              readOnly: true
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}

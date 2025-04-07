@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "nvflare.overseer.fullname" . }}
+  labels:
+    {{- include "nvflare.overseer.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      {{- include "nvflare.overseer.selectorLabels" . | nindent 6 }}
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: {{ .Release.Namespace }}
+      podSelector:
+        matchLabels:
+          {{- include "nvflare.server.selectorLabels" . | nindent 10 }}
+    ports:
+    - protocol: TCP
+      port: {{ .Values.overseer.service.port }}
+      endPort: {{ .Values.overseer.service.port }}
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: ingress
+    ports:
+      - protocol: TCP
+        port: {{ .Values.overseer.service.port }}
+        endPort: {{ .Values.overseer.service.port }}
