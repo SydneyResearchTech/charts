@@ -77,9 +77,6 @@ spec:
             - name: conf
               mountPath: /k8s-config/conf
               readOnly: true
-            - name: x509
-              mountPath: /k8s-secrets/certs
-              readOnly: true
           {{- with .Values.volumeMounts }}
             {{- toYaml . | nindent 12 }}
           {{- end }}
@@ -95,9 +92,6 @@ spec:
         - name: conf
           configMap:
             name: {{ include "nvflare.overseer.fullname" . }}
-        - name: x509
-          secret:
-            secretName: {{ default (include "nvflare.overseer.fullname" .) .Values.overseer.certs.secretName }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
