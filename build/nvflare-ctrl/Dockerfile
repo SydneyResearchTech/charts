@@ -5,9 +5,9 @@ LABEL org.opencontainers.image.authors="dean.taylor@sydney.edu.au"
 COPY ./ /
 
 RUN <<EOT
-python -m pip install -U pip
-python -m pip install -r /requirements.txt
+python3 -m pip install -U pip
+python3 -m pip install -r /requirements.txt
 EOT
 
 ENTRYPOINT ['entrypoint.sh']
-CMD ['python','/usr/local/bin/ctrl.py']
+CMD ['python3','/usr/local/bin/ctrl.py']
