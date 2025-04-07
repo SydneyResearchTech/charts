@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # https://nvflare.readthedocs.io/en/2.4/user_guide/dashboard_api.html#api
+# https://github.com/kubernetes-client/python/blob/master/kubernetes/README.md
 import sys
 import json
 import os
@@ -12,7 +13,7 @@ import zipfile
 import base64
 from pprint import pprint
 
-URL = "http://localhost:8443/api/v1"
+URL = os.getenv('NVFLD_API_URL', "http://localhost:8443/api/v1")
 HEADERS = {
         "Accept": "application/json",
         "Content-Type": "application/json",
@@ -70,11 +71,11 @@ def updateProject():
             URL + "/project",
             headers = HEADERS,
             json = {
-                "app_location": "docker pull nvflare/nvflare:2.5.2",
-                "short_name": "example-project",
-                "overseer": "nvflare-overseer.nvflare.svc.cluster.local",
-                "server1": "nvflare-server.nvflare.svc.cluster.local",
-                "server2": "nvflare-server2.nvflare.svc.cluster.local",
+                "app_location": "docker pull " + os.getenv('NVFLD_DOCKER_IMAGE', "nvflare/nvflare:latest"),
+                "short_name": os.getenv('NVFLD_PROJECT_NAME', "example-project"),
+                "overseer": os.getenv('NVFLD_OVERSEER_URL', "nvflare-overseer.nvflare.svc.cluster.local"),
+                "server1": os.getenv('NVFLD_SERVER1_URL', "nvflare-server.nvflare.svc.cluster.local"),
+                "server2": os.getenv('NVFLD_SERVER2_URL', "nvflare-server-2.nvflare.svc.cluster.local"),
                 "ha_mode": True,
                 },
             )
@@ -109,17 +110,18 @@ def readStartupKit(service, id=None):
                     data[_file] = base64.b64encode(f.read()).decode('utf-8')
     return data
 
-def createSecret(data, name):
+def createSecret(data, name, s_type="Opaque"):
     v1 = client.CoreV1Api()
     try:
         r = v1.create_namespaced_secret(
-                namespace = os.getenv("K8S_NAMESPACE"),
+                namespace = os.getenv("NVFLD_NAMESPACE"),
                 body = client.V1Secret(
                     api_version = "v1",
                     kind = "Secret",
+                    type = s_type,
                     metadata = client.V1ObjectMeta(
                         name = name,
-                        namespace = os.getenv("K8S_NAMESPACE"),
+                        namespace = os.getenv("NVFLD_NAMESPACE"),
                         ),
                     data = data,
                     ),
@@ -143,7 +145,7 @@ def readState():
                 "1": False,
                 "2": False,
                 },
-            "clients": {},
+            "sites": {},
             }
     try:
         with open('/dashboard/.ctrl_state', 'r') as f:
@@ -173,17 +175,26 @@ def main():
             if project["frozen"]:
                 if project["ha_mode"]:
                     if not state['overseer']:
-                        data = readStartupKit("overseer")
-                        createSecret(data, os.getenv("NVFL_OVERSEER_SECRET"))
+                        _data = readStartupKit("overseer")
+                        createSecret(_data, os.getenv("NVFLD_OVERSEER_SECRET"))
+                        createSecret(
+                                data = {
+                                    "ca.crt": _data.rootCA.pem,
+                                    "tls.crt": _data.overseer.crt,
+                                    "tls.key": _data.overseer.key,
+                                    },
+                                name = "{}-tls".format(os.getenv("NVFLD_OVERSEER_SECRET")),
+                                s_type = "kubernetes.io/tls",
+                                )
                         state['overseer'] = True
                     if not state['servers']['2']:
                         data = readStartupKit("servers", 2)
-                        createSecret(data, "{0}-2".format(os.getenv("NVFL_SERVER_SECRET")))
+                        createSecret(data, "{0}-2".format(os.getenv("NVFLD_SERVER_SECRET")))
                         state['servers']['2'] = True
 
                 if not state['servers']['1']:
                     data = readStartupKit("servers", 1)
-                    createSecret(data, "{0}-1".format(os.getenv("NVFL_SERVER_SECRET")))
+                    createSecret(data, "{0}-1".format(os.getenv("NVFLD_SERVER_SECRET")))
                     state['servers']['1'] = True
             else:
                 updateProject()
