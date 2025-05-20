@@ -1,9 +1,15 @@
+{{/*
+Expand bind9 executable options based on settings from the values file
+*/}}
 {{- define "bind.args" -}}
+["-g","-p","dns=5353"
 {{- if and (hasKey .Values "resources") (hasKey .Values.resources "limits") (hasKey .Values.resources.limits "cpu") -}}
-["-g","-p","dns=5353","-n","{{ .Values.resources.limits.cpu }}"]
-{{- else -}}
-["-g","-p","dns=5353"]
-{{- end }}
+,"-n","{{ .Values.resources.limits.cpu }}"
+{{- end -}}
+{{- if .Values.debug_level -}}
+,"-d","{{ .Values.debug_level }}"
+{{- end -}}
+]
 {{- end }}
 
 {{/*
