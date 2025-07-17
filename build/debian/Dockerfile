@@ -8,6 +8,7 @@ RUN apt-get update && apt-get -y install \
  curl \
  gettext-base \
  postgresql-client-15 \
+ postgresql-client-common \
  && rm -rf /var/lib/apt/lists/*
 
 COPY ./ /
