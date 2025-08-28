@@ -1,0 +1,155 @@
+#!/usr/bin/env python3
+import base64
+import logging
+import json
+from kubernetes import client, config
+from kubernetes.client.rest import ApiException
+from nvflare.lighter.provision import Provisioner
+from nvflare.lighter.impl.workspace import WorkspaceBuilder
+from nvflare.lighter.impl.static_file import StaticFileBuilder
+from nvflare.lighter.impl.cert import CertBuilder
+from nvflare.lighter.impl.signature import SignatureBuilder
+from nvflare.lighter.entity import Project, Participant
+import os
+import sys
+import tempfile
+
+logger = logging.getLogger(__name__)
+
+ENV_PREFIX="HELM_"
+
+# Defaults
+NAMESPACE = os.getenv(f"{ENV_PREFIX}NAMESPACE", "default")
+SERVER_SECRET = os.getenv(f"{ENV_PREFIX}SERVER_SECRET", "nvflare-server-startup")
+SERVER_FQDN = os.getenv(f"{ENV_PREFIX}SERVER_FQDN", "nvflare-server.fake.sydney.edu.au")
+
+ROOTCA_SECRET = "nvflare-rootca"
+OVERSEER_STARTUP_SECRET = "nvflare-overseer-startup"
+SERVER_1_STARTUP_SECRET = "nvflare-server-1-startup"
+SERVER_2_STARTUP_SECRET = "nvflare-server-2-startup"
+
+def createSecret(data, name, stype="Opaque"):
+    v1 = client.CoreV1Api()
+    try:
+        r = v1.create_namespaced_secret(
+                namespace = NAMESPACE,
+                body = client.V1Secret(
+                    api_version = "v1",
+                    kind = "Secret",
+                    metadata = client.V1ObjectMeta(
+                        name = name,
+                        namespace = NAMESPACE,
+                        ),
+                    type = stype,
+                    data = data,
+                    ),
+                )
+    except ApiException as e:
+        logger.error("Exception when calling CoreV1Api->create_namespaced_secret: %s\n" % e)
+    logger.info(f"CoreV1Api->create_namespaced_secret {name} ({NAMESPACE})")
+
+def readSecret(name):
+    v1 = client.CoreV1Api()
+    try:
+        r = v1.read_namespaced_secret(name, NAMESPACE)
+    except ApiException as e:
+        if e.status == 404:
+            logger.info(f"CoreV1Api->read_namespaced_secret {name} ({NAMESPACE}) does not exit.")
+            return None
+        else:
+            raise e
+    return r.data
+
+def main():
+    try:
+        config.load_incluster_config()
+    except Exception as e:
+        config.load_kube_config()
+
+    _rootca_secret = os.getenv(f"{ENV_PREFIX}ROOTCA_SECRET", ROOTCA_SECRET)
+    _server_1_secret = os.getenv(f"{ENV_PREFIX}SERVER_1_STARTUP_SECRET", SERVER_1_STARTUP_SECRET)
+
+    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+    overseer_agent = {
+        "path": "nvflare.ha.dummy_overseer_agent.DummyOverseerAgent",
+        "overseer_exists": False,
+        "args": {"sp_end_point": f"{SERVER_FQDN}:8002:8003"},
+    }
+    builders = [
+        WorkspaceBuilder("master_template.yml"),
+        StaticFileBuilder(
+            config_folder = "config",
+            scheme = "grpc",
+            docker_image = None,
+            overseer_agent = overseer_agent,
+        ),
+        CertBuilder(),
+        SignatureBuilder(),
+    ]
+
+    server = Participant(
+            type = "server",
+            name = SERVER_FQDN,
+            org = "The_University_of_Sydney",
+            props = {
+                "fed_learn_port": 8002,
+                "admin_port": 8003,
+            }
+        )
+
+    overseer = None
+    if overseer:
+        overseer_agent["path"] = "nvflare.ha.overseer_agent.HttpOverseerAgent"
+        overseer_agent["overseer_exists"] = True
+
+    project = Project(
+            name = "project_name",
+            description = "project_description",
+            participants = [
+                server,
+                ],
+            )
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        _state = os.path.join(tmpdir,"project_name","state")
+        _startup = os.path.join(tmpdir,"project_name","prod_00",SERVER_FQDN,"startup")
+        _cert_state = os.path.join(_state,"cert.json")
+
+        _rootca = readSecret(_rootca_secret)
+        if _rootca:
+            os.makedirs(_state, exist_ok=True)
+            _cert_json = {}
+            _cert_json["root_cert"] = base64.b64decode(_rootca["tls.crt"]).decode('utf-8')
+            _cert_json["root_pri_key"] = base64.b64decode(_rootca["tls.key"]).decode('utf-8')
+            with open(_cert_state, "w") as f:
+                json.dump(_cert_json, f)
+
+        provisioner = Provisioner(
+                root_dir = tmpdir,
+                builders = builders,
+                )
+        provisioner.provision(project)
+        #input("Press ENTER to continue...")
+
+        if not _rootca:
+            _data = {}
+            with open(_cert_state, 'rb') as f:
+                _cert_json = json.load(f)
+            _data["tls.crt"] = base64.b64encode(_cert_json["root_cert"].encode('utf-8')).decode('utf-8')
+            _data["tls.key"] = base64.b64encode(_cert_json["root_pri_key"].encode('utf-8')).decode('utf-8')
+            _data["ca.crt"] = ""
+            #_data[""] = base64.b64encode(_cert_json["server-1.fake.sydney.edu.au"]["cert"])
+            #_data[""] = base64.b64encode(_cert_json["server-1.fake.sydney.edu.au"]["pri_key"])
+            createSecret(_data, _rootca_secret, stype="kubernetes.io/tls")
+
+        _server_startup = readSecret(SERVER_SECRET)
+        if not _server_startup:
+            _data = {}
+            for f in os.listdir(_startup):
+                with open(os.path.join(_startup,f),"rb") as d:
+                    _data[f] = base64.b64encode(d.read()).decode('utf-8')
+            createSecret(_data, SERVER_SECRET)
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+from nvflare.lighter import tplt_utils, utils
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes, serialization
+
+# Defaults
+STARTUP = "/workspace/startup"
+
+def sign_content(content, signing_pri_key, return_str=True):
+    if isinstance(content, str):
+        content = content.encode("utf-8")  # to bytes
+    signature = signing_pri_key.sign(
+        data=content,
+        padding=_content_padding(),
+        algorithm=_content_hash_algo(),
+    )
+
+    # signature is bytes
+    if return_str:
+        return b64encode(signature).decode("utf-8")
+    else:
+        return signature
+
+def sign_all(content_folder, signing_pri_key):
+    signatures = dict()
+    for f in os.listdir(content_folder):
+        path = os.path.join(content_folder, f)
+        if os.path.isfile(path):
+            with open(path, "rb") as file:
+                signatures[f] = sign_content(
+                    content=file.read(),
+                    signing_pri_key=signing_pri_key,
+                )
+    return signatures
+
+def deserialize_ca_key(ser_pri_key):
+    pri_key = serialization.load_pem_private_key(
+            ser_pri_key,
+            password=dashboard_pp,
+            backend=default_backend())
+    return pri_key
+
+def main():
+    dest_dir = STARTUP
+
+    signatures = utils.sign_all(
+            dest_dir,
+            deserialize_ca_key(project.root_key)
+            )
+    with open(os.path.join(dest_dir, "signature.json"), "wt") as f:
+        json.dump(signatures, f)
+
+if __name__ == "__main__":
+    main()
