@@ -6,6 +6,18 @@ https://{{ include "nvflare.overseer.fullname" . }}:{{ .Values.overseer.service.
 {{- end }}
 {{- end }}
 
+{{- define "nvflare.server.sp_endpoint" -}}
+{{- printf "%s:$d:%d" (include "nvflare.server.service" .) .Values.server.service.fl.port .Values.server.service.admin.port }}
+{{- end }}
+
+{{- define "nvflare.server.service_target" -}}
+{{- printf "%s:$d" (include "nvflare.server.service" .) .Values.server.service.fl.port }}
+{{- end }}
+
+{{- define "nvflare.server.service" -}}
+{{- printf "%s.%s.svc.cluster.local" (include "nvflare.server.fullname" .) .Release.Namespace }}
+{{- end }}
+
 {{- define "nvflare.server.fullname" -}}
 {{- include "nvflare.fullname" . }}-server
 {{- end }}

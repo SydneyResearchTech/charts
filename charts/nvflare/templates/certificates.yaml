@@ -1,0 +1,107 @@
+{{- if false -}}
+{{- if .Capabilities.APIVersions.Has "cert-manager.io/v1" -}}
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ca-issuer
+spec:
+  isCA: true
+  commonName: {{ .Values.project.name }}
+  subject:
+    organizations:
+      - {{ .Values.project.organisation }}
+    organizationalUnits:
+      - {{ .Values.project.name }}
+  secretName: ca-issuer
+  privateKey:
+    algorithm: RSA
+    encoding: PKCS1
+    size: 2048
+  issuerRef:
+    name: selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: ca-issuer
+spec:
+  ca:
+    secretName: ca-issuer
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "nvflare.overseer.fullname" . }}
+spec:
+  secretName: {{ include "nvflare.overseer.fullname" . }}-x509
+  commonName: overseer.nvflare.fake.sydney.edu.au
+  usages:
+    - client auth
+    - server auth
+  dnsNames:
+    - overseer.nvflare.fake.sydney.edu.au
+    - {{ include "nvflare.overseer.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+    - {{ include "nvflare.overseer.fullname" . }}.{{ .Release.Namespace }}.svc
+    - {{ include "nvflare.overseer.fullname" . }}
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- range (list 1 2) }}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ include "nvflare.server.fullname" $ }}-{{ . }}
+spec:
+  secretName: {{ include "nvflare.server.fullname" $ }}-{{ . }}-x509
+  usages:
+    - client auth
+    - server auth
+  subject:
+    organizations:
+      - {{ $.Values.project.organisation }}
+  commonName: server-{{ . }}.nvflare.fake.sydney.edu.au
+  dnsNames:
+    - server-{{ . }}.nvflare.fake.sydney.edu.au
+    - {{ include "nvflare.server.fullname" $ }}-{{ . }}.{{ $.Release.Namespace }}.svc.cluster.local
+    - {{ include "nvflare.server.fullname" $ }}-{{ . }}.{{ $.Release.Namespace }}.svc
+    - {{ include "nvflare.server.fullname" $ }}-{{ . }}
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
+{{- $client := .Values.project.admin | replace "." "-" | replace "@" "-" -}}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ $client }}
+spec:
+  secretName: {{ $client }}-x509
+  usages:
+    - client auth
+  subject:
+    organizations:
+      - {{ .Values.project.organisation }}
+  commonName: {{ .Values.project.admin }}
+  dnsNames:
+    - {{ .Values.project.admin }}
+  otherNames:
+    - {oid: unstructuredName, utf8Value: project_admin}
+  issuerRef:
+    name: ca-issuer
+    kind: Issuer
+    group: cert-manager.io
+{{- end }}
+{{- end }}

@@ -4,23 +4,23 @@
     {
       "name": "{{ .Values.project.name }}",
       "service": {
-        "target": "${HOSTNAME}:{{ .Values.server.service.fl.port }}",
+        "target": "nvflare-server.nvflare.svc.cluster.local:{{ .Values.server.service.fl.port }}",
         "scheme": "grpc"
       },
-      "admin_host": "${HOSTNAME}",
+      "admin_host": "nvflare-server.nvflare.svc.cluster.local",
       "admin_port": {{ .Values.server.service.admin.port }},
-      "ssl_private_key": "/k8s_secrets/certs/{{ .Values.server.certs.keyfileName }}",
-      "ssl_cert": "/k8s_secret/certs/{{ .Values.server.certs.certfileName }}",
-      "ssl_root_cert": "/k8s_secrets/certs/{{ .Values.server.certs.cacertName }}"
+      "ssl_private_key": "server.key",
+      "ssl_cert": "server.crt",
+      "ssl_root_cert": "rootCA.pem"
     }
   ],
   "overseer_agent": {
     "path": "nvflare.ha.overseer_agent.HttpOverseerAgent",
     "args": {
       "role": "server",
-      "overseer_end_point": "https://{{ include "nvflare.overseer.name" . }}:{{ .Values.overseer.service.port }}/api/v1",
+      "overseer_end_point": "https://nvflare.fake.sydney.edu.au/api/v1",
       "project": "{{ .Values.project.name }}",
-      "name": "${HOSTNAME}",
+      "name": "nvflare-server.nvflare.svc.cluster.local",
       "fl_port": "{{ .Values.server.service.fl.port }}",
       "admin_port": "{{ .Values.server.service.admin.port }}"
     }

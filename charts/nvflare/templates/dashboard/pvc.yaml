@@ -1,3 +1,4 @@
+{{- if .Values.dashboard.enabled -}}
 {{- if not .Values.dashboard.persistence.existingVolumeClaim -}}
 {{- $storageClassName := (include "nvflare.dashboard.storageClassName" .) -}}
 apiVersion: v1
@@ -19,5 +20,6 @@ spec:
   {{ $storageClassName }}
 {{- end }}
   volumeMode: Filesystem
+{{- end }}
 {{- end }}
 {{- end }}

@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "nvflare.server.fullname" . }}
+  name: {{ include "nvflare.server.fullname" . }}-startup
   labels:
     {{- include "nvflare.labels" . | nindent 4 }}
 data:
   fed_server.json: |
-    {{- tpl ($.Files.Get "tpl/fed_server.json") . | fromJson | toPrettyJson | nindent 4 }}
+    {{- tpl (.Files.Get "tpl/server/startup/fed_server.json") . | fromJson | toPrettyJson | nindent 4 }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -16,18 +16,8 @@ metadata:
     {{- include "nvflare.labels" . | nindent 4 }}
 data:
   authorization.json: |
-    {{- .Files.Get "tpl/server/local/authorization.json" | fromJson | toPrettyJson | nindent 4 }}
-  log.config: |
-    {{- .Files.Get "tpl/server/local/log.config" | nindent 4 }}
+    {{- tpl (.Files.Get "tpl/server/local/authorization.json") . | fromJson | toPrettyJson | nindent 4 }}
+  log_config.json: |
+    {{- tpl (.Files.Get "tpl/server/local/log_config.json") . | nindent 4 }}
   resources.json: |
-    {{- .Files.Get "tpl/server/local/resources.json" | fromJson | toPrettyJson | nindent 4 }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ include "nvflare.server.fullname" . }}-startup
-  labels:
-    {{- include "nvflare.labels" . | nindent 4 }}
-data:
-  fed_server.json: |
-    {{- tpl ($.Files.Get "tpl/fed_server.json") . | fromJson | toPrettyJson | nindent 4 }}
+    {{- tpl (.Files.Get "tpl/server/local/resources.json") . | fromJson | toPrettyJson | nindent 4 }}

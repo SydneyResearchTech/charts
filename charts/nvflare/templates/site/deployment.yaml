@@ -28,7 +28,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "nvflare.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -40,7 +39,7 @@ spec:
             - -m
             - /workspace
             - -s
-            - fed_client.josn
+            - fed_client.json
             - --set
             - secure_train=true
             - uid=site-1

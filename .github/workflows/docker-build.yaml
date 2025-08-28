@@ -72,11 +72,10 @@ jobs:
       - name: Get Docker image tag
         run: |
           TAG=$(sed -n 's/^ARG DOCKER_IMAGE_TAG=\(.*\)$/\1/p' build/${{ matrix.context }}/Dockerfile)
-          if [ -z $TAG ]; then
-            echo "DOCKER_IMAGE_TAG=0.1.0" >> "$GITHUB_ENV"
-          else
-            echo "DOCKER_IMAGE_TAG=${TAG}" >> "$GITHUB_ENV"
-          fi
+          [ -z $TAG ] && TAG=0.1.0
+          APP_VERSION=$(sed -n 's/^ARG APP_VERSION=\(.*\)$/\1/p' build/${{ matrix.context }}/Dockerfile)
+          echo "DOCKER_IMAGE_TAG=${TAG}"     >> "$GITHUB_ENV"
+          echo "APP_VERSION=-${APP_VERSION}" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
@@ -87,5 +86,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
-            ghcr.io/sydneyresearchtech/${{ matrix.context }}:${{ env.DOCKER_IMAGE_TAG }}
-            ghcr.io/sydneyresearchtech/${{ matrix.context }}:latest
+            ghcr.io/sydneyresearchtech/${{ matrix.context }}${{ env.APP_VERSION }}:${{ env.DOCKER_IMAGE_TAG }}
+            ghcr.io/sydneyresearchtech/${{ matrix.context }}${{ env.APP_VERSION }}:latest

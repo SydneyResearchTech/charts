@@ -1,3 +1,4 @@
+{{- if .Values.dashboard.enabled -}}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -35,7 +36,7 @@ spec:
       containers:
         - name: {{ .Chart.Name }}
           command: ["/usr/local/bin/python3"]
-          args: ["nvflare/dashboard/wsgi.py"]
+          args: ["/opt/NVFlare/nvflare/dashboard/wsgi.py"]
           workingDir: "/opt/NVFlare"
           env:
             - {name: TMPDIR, value: "/tmp"}
@@ -75,10 +76,14 @@ spec:
               mountPath: /tmp
             - name: dashboard
               mountPath: /var/tmp/nvflare/dashboard
+            - name: project-yml
+              mountPath: /opt/NVFlare/nvflare/lighter/ha_project.yml
+              subPath: ha_project.yml
+              readOnly: true
         # TODO move to feature gate SidecarContainers v1.29 initContainers restart: Always
         - name: ctrl
-          image: ghcr.io/sydneyresearchtech/nvflare-ctrl:1.1.0
-          command: [python, /usr/local/bin/ctrl.py]
+          image: ghcr.io/sydneyresearchtech/nvflare-ctrl:1.2.0
+          command: [python, /app/dashboard_ctrl.py]
           env:
             - name: NVFL_CREDENTIAL
               valueFrom:
@@ -90,10 +95,16 @@ spec:
                 secretKeyRef:
                   name: {{ include "nvflare.dashboard.fullname" . }}
                   key: NVFL_PROJ_ADMIN_CREDENTIAL
-            - {name: K8S_NAMESPACE, value: {{ .Release.Namespace }}}
-            - {name: NVFL_OVERSEER_SECRET, value: {{ printf "%s-startup" (include "nvflare.overseer.fullname" .) }}}
-            - {name: NVFL_SERVER_SECRET, value: {{ printf "%s-startup" (include "nvflare.server.fullname" .) }}}
-            - {name: NVFL_SITE_SECRET, value: {{ printf "%s-site" (include "nvflare.site.fullname" .) }}}
+            - {name: NVFLD_API_URL, value: {{ printf "http://localhost:%d/api/v1" .Values.dashboard.service.port }}}
+            - {name: NVFLD_NAMESPACE, value: {{ .Release.Namespace }}}
+            - {name: NVFLD_OVERSEER_SECRET, value: {{ printf "%s-startup" (include "nvflare.overseer.fullname" .) }}}
+            - {name: NVFLD_SERVER_SECRET, value: {{ printf "%s-startup" (include "nvflare.server.fullname" .) }}}
+            - {name: NVFLD_SITE_SECRET, value: {{ printf "%s-startup" (include "nvflare.site.fullname" .) }}}
+            - {name: NVFLD_DOCKER_IMAGE, value: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}}
+            - {name: NVFLD_PROJECT_NAME, value: {{ .Values.project.name }}}
+            - {name: NVFLD_OVERSEER_URL, value: {{ include "nvflare.overseer.url" . }}}
+            - {name: NVFLD_SERVER1_URL, value: {{ printf "%s.%s.svc.cluster.local" (include "nvflare.server.fullname" .) .Release.Namespace }}}
+            - {name: NVFLD_SERVER2_URL, value: {{ printf "%s-2.%s.svc.cluster.local" (include "nvflare.server.fullname" .) .Release.Namespace }}}
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
@@ -103,12 +114,23 @@ spec:
               mountPath: /tmp
             - name: dashboard
               mountPath: /dashboard
+            - name: ctrl
+              mountPath: /app
+              readOnly: true
       volumes:
         - name: tmpdir
           emptyDir: {}
         - name: dashboard
           persistentVolumeClaim:
             claimName: {{ include "nvflare.dashboard.fullname" . }}
+        - name: project-yml
+          configMap:
+            name: {{ include "nvflare.fullname" . }}
+            items:
+              - {key: project.yml, path: ha_project.yml}
+        - name: ctrl
+          configMap:
+            name: dashboard-ctrl
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
@@ -121,3 +143,4 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}

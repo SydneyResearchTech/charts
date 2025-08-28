@@ -20,5 +20,6 @@
   echo "Visit https://127.0.0.1:8443 to use your application"
   kubectl --namespace {{ .Release.Namespace }} port-forward $POD_NAME 8443:$CONTAINER_PORT
 {{- end }}
+
 2. Get the project administrator credentials.
   kubectl -n{{ .Release.Namespace }} get secret {{ include "nvflare.dashboard.fullname" . }} -o jsonpath='{.data.NVFL_PROJ_ADMIN_CREDENTIAL}' |base64 -d

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "properties": {
+    "client": {
+      "description": "Client site that responds to Server’s task assignments and performs learning actions based on its local data."
+    },
+    "image": {
+      "description": "Container Image",
+      "properties": {
+        "repo": {"type": "string"},
+        "tag": {"type": "string"}
+      },
+      "type": "object"
+    },
+    "server": {
+      "description": "Server site responsible for client coordination based on federation workflows.",
+      "properties": {
+        "service": {
+          "type": "object",
+          "properties": {
+            "annotations": {"type": "object"},
+            "admin": {
+              "description": "Port number for FL Server and FLARE Console instances (TCP).",
+              "type": "object",
+              "properties": {
+                "port": {"type": "integer", "minimum": 1024, "max": 32767}
+              }
+            },
+            "fl": {
+              "description": "Port number for FL server and clients (gRPC).",
+              "type": "object",
+              "properties": {
+                "port": {"type": "integer", "minimum": 1024, "max": 32767}
+              }
+            },
+            "type": {"type": "string", "enum": ["ClusterIP","LoadBalancer"]}
+          }
+        }
+      },
+      "required": ["service"],
+      "type": "object"
+    }
+  },
+  "required": ["server"],
+  "title": "Values",
+  "type": "object"
+}

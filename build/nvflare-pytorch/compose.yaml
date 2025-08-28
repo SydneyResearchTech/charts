@@ -1,0 +1,4 @@
+services:
+  nvflare:
+    build: .
+    ports: []
