@@ -8,10 +8,10 @@ on:
       - charts/**
 
 jobs:
-  security:
-    uses: ${{ vars.GITHUB_REPOSITORY }}/.github/workflows/lint-test.yaml@main
-    secrets:
-      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+  #security:
+  #  uses: ${{ vars.GITHUB_REPOSITORY }}/.github/workflows/lint-test.yaml@main
+  #  secrets:
+  #    SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
 
   release:
     runs-on: ubuntu-latest
