@@ -450,6 +450,21 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/mirc-ctp-0.1.0/mirc-ctp-0.1.0.tgz
     version: 0.1.0
+  nvflare:
+  - apiVersion: v2
+    appVersion: 2.6.0
+    created: "2025-08-28T05:42:27.146883712Z"
+    description: NVIDIA Federated Learning Application Runtime Environment
+    digest: 9795d403ddc6c0ae7b994f13b64665f633cda6b832bc3777746c7227b62379dd
+    maintainers:
+    - email: dean.taylor@sydney.edu.au
+      name: dean-taylor
+      url: https://au.linkedin.com/in/dean-taylor-a8699238
+    name: nvflare
+    type: application
+    urls:
+    - https://github.com/SydneyResearchTech/charts/releases/download/nvflare-0.2.0-dev.1/nvflare-0.2.0-dev.1.tgz
+    version: 0.2.0-dev.1
   omero:
   - apiVersion: v2
     appVersion: 5.6.5
@@ -738,4 +753,4 @@ entries:
     urls:
     - https://github.com/SydneyResearchTech/charts/releases/download/orthanc-0.1.0/orthanc-0.1.0.tgz
     version: 0.1.0
-generated: "2025-08-28T05:08:03.258661395Z"
+generated: "2025-08-28T05:42:27.146963953Z"
