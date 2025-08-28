@@ -1,5 +1,9 @@
 name: Lint and test charts
-on: pull_request
+on:
+  workflow_call:
+    secrets:
+      SNYK_TOKEN:
+        required: true
 
 jobs:
   lint-test:
@@ -41,11 +45,9 @@ jobs:
 
       - name: run Snyk to check Kubernetes manifest file for issues
         run: |
-          EXIT_CODE=0
-          while IFS= read -r -d '' line; do
-            bin/snyk-iac-test "$line" --severity-threshold=medium --target-name=${{ vars.GITHUB_REPOSITORY }} || EXIT_CODE=$?
-          done < <(ct list-changed --config ct.yaml)
-          exit $EXIT_CODE
+          bin/snyk-iac-test \
+          $(ct list-changed --config ct.yaml |tr '\n' ' ') \
+          --severity-threshold=medium --target-name=${{ vars.GITHUB_REPOSITORY }}
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
           TMPDIR: ${{ runner.temp }}

@@ -1,4 +1,4 @@
-# Default values for omero.
+#  Default values for omero.
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 ## @section Global parameters

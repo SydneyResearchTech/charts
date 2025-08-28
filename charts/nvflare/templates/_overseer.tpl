@@ -1,3 +1,19 @@
+{{- define "nvflare.overseer.fqdn" -}}
+{{- if .Values.ingress.enabled -}}
+{{ (index .Values.ingress.hosts 0).host }}
+{{- else -}}
+{{ include "nvflare.overseer.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
+{{- end }}
+
+{{- define "nvflare.overseer.url" -}}
+{{- if .Values.ingress.enabled -}}
+{{ (index .Values.ingress.hosts 0).host }}
+{{- else -}}
+{{ include "nvflare.overseer.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local
+{{- end }}
+{{- end }}
+
 {{- define "nvflare.overseer.fullname" -}}
 {{- include "nvflare.fullname" . }}-overseer
 {{- end }}

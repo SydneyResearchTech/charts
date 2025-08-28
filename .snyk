@@ -13,3 +13,13 @@ ignore:
         expires: 9999-08-09T04:25:48.238Z
         created: 2024-07-10T04:25:48.239Z
 patch: {}
+exclude:
+  global:
+    - orthanc
+    - orthanc/*
+    - orthanc/**
+    - orthanc/***
+    - /orthanc
+    - /orthanc/*
+    - /orthanc/**
+    - /orthanc/***

@@ -29,7 +29,6 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "nvflare.serviceAccountName" . }}
       {{- with .Values.podSecurityContext }}
       securityContext:
         {{- toYaml . | nindent 8 }}
@@ -75,45 +74,41 @@ spec:
           volumeMounts:
             - name: tmpdir
               mountPath: /tmp
-          {{- with .Values.volumeMounts }}
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
-            - name: local
-              mountPath: /workspace/local
-              readOnly: true
+            - name: workspace
+              mountPath: /workspace
             - name: startup
               mountPath: /workspace/startup
+              readOnly: true
+            - name: local
+              mountPath: /workspace/local
               readOnly: true
       initContainers:
         - name: init
           command: [/bin/sh, -c]
           args:
             - |
+              mkdir -p /workspace/local
+              mkdir -p /workspace/startup
               mkdir -p /workspace/transfer
           {{- with .Values.securityContext }}
           securityContext:
             {{- toYaml . | nindent 12 }}
           {{- end }}
           image: debian
-          {{- with .Values.volumeMounts }}
           volumeMounts:
-            {{- toYaml . | nindent 12 }}
-          {{- end }}
+            - name: workspace
+              mountPath: /workspace
       volumes:
-        - name: startup
-          secret:
-            secretName: {{ include "nvflare.server.fullname" . }}-startup-1
         - name: tmpdir
           emptyDir: {}
-        - name: x509
+        - name: workspace
+          emptyDir: {}
+        - name: startup
           secret:
-            secretName: {{ default (include "nvflare.server.name" .) .Values.server.certs.secretName }}
+            secretName: {{ include "nvflare.server.fullname" . }}-startup
         - name: local
           configMap:
             name: {{ include "nvflare.server.fullname" . }}-local
-      {{- with .Values.volumes }}
-        {{- toYaml . | nindent 8 }}
-      {{- end }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

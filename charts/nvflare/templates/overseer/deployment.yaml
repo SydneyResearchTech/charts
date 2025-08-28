@@ -2,7 +2,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "nvflare.fullname" . }}-overseer
+  name: {{ include "nvflare.overseer.fullname" . }}
   labels:
     {{- include "nvflare.overseer.labels" . | nindent 4 }}
 spec:
@@ -37,13 +37,22 @@ spec:
         - name: {{ .Chart.Name }}
           command: [gunicorn]
           args:
-            - --config=/workspace/startup/gunicorn.conf.py
-            - --keyfile=/workspace/startup/overseer.key
-            - --certfile=/workspace/startup/overseer.crt
-            - --ca-cert=/workspace/startup/rootCA.pem
+            - --config=/k8s-config/conf/gunicorn.conf.py
             - --access-logfile=-
             - --disable-redirect-access-to-syslog
             - --log-level=info
+            - --bind=0.0.0.0:8443
+          {{- if .Values.ingress.enabled }}
+            - --cert-reqs=0
+            - --forwarded-allow-ips=*
+            - --proxy-allow-from=*
+          {{- else }}
+            - --keyfile=/workspace/startup/overseer.key
+            - --certfile=/workspace/startup/overseer.crt
+            - --cert-reqs=2
+            - --ca-certs=/workspace/startup/rootCA.pem
+            - --do-handshake-on-connect
+          {{- end }}
           workingDir: /workspace/startup
           env:
             - {name: NVFL_OVERSEER_HEARTBEAT_TIMEOUT, value: "10"}
@@ -83,6 +92,25 @@ spec:
             - name: startup
               mountPath: /workspace/startup
               readOnly: true
+      initContainers:
+        - name: init-provision
+          command: ['tail','-f','/dev/null']
+          env:
+            - {name: NVFLD_NAMESPACE, value: {{ .Release.Namespace }}}
+            - {name: NVFLD_OVERSEER_SECRET, value: {{ printf "%s-startup" (include "nvflare.overseer.fullname" .) }}}
+            - {name: NVFLD_SERVER_SECRET, value: {{ printf "%s-startup" (include "nvflare.server.fullname" .) }}}
+            - {name: NVFLD_SITE_SECRET, value: {{ printf "%s-startup" (include "nvflare.site.fullname" .) }}}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          volumeMounts:
+            - name: tmpdir
+              mountPath: /tmp
+            - name: development
+              mountPath: /opt/code
       volumes:
         - name: startup
           secret:
@@ -92,6 +120,9 @@ spec:
         - name: conf
           configMap:
             name: {{ include "nvflare.overseer.fullname" . }}
+        - name: development
+          hostPath:
+            path: /home/ubuntu/nvflare/vol
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -1,0 +1,51 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "nvflare.fullname" . }}
+  labels:
+    {{- include "nvflare.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": post-install,post-upgrade,post-rollback
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  template:
+    metadata:
+      name: {{ include "nvflare.fullname" . }}
+      labels:
+        {{- include "nvflare.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "nvflare.serviceAccountName" . }}
+      containers:
+        - name: provision
+          image: "localhost:32000/nvflare-2.6.0:0.1.0"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["python3", "/k8s/bin/provision.py"]
+          env:
+            - {name: TMPDIR, value: /tmp}
+            - {name: HELM_NAMESPACE, value: {{ .Release.Namespace }}}
+            - {name: HELM_ROOTCA, value: {{ include "nvflare.fullname" . }}-rootca}
+            - {name: HELM_SERVER_SECRET, value: {{ include "nvflare.server.fullname" . }}-startup}
+            - {name: HELM_SERVER_FQDN, value: "nvflare-server.fake.sydney.edu.au"}
+
+            - {name: HELM_OVERSEER_SECRET, value: {{ include "nvflare.fullname" . }}-overseer-startup}
+            - {name: HELM_SERVER_1_SECRET, value: {{ include "nvflare.fullname" . }}-server-1-startup}
+            - {name: HELM_SERVER_2_SECRET, value: {{ include "nvflare.fullname" . }}-server-2-startup}
+          # signature.py /workspace
+          # server-1/signature.json {"fed_server.json":"","server.key":"","server.crt":"","rootCA.pem":""}
+          # server-2/signature.json {"fed_server.json":"","server.key":"","server.crt":"","rootCA.pem":""}
+          volumeMounts:
+            - name: tmpdir
+              mountPath: /tmp
+            - name: workspace
+              mountPath: /workspace
+            - name: bin
+              mountPath: /k8s/bin
+      volumes:
+        - name: tmpdir
+          emptyDir: {}
+        - name: workspace
+          emptyDir: {}
+        - name: bin
+          configMap:
+            name: bin

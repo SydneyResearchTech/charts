@@ -8,6 +8,16 @@ rules:
   - apiGroups: [""]
     resources: ["secrets"]
     verbs: ["create"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    resourceNames:
+      - {{ include "nvflare.fullname" . }}-rootca
+      - {{ include "nvflare.fullname" . }}-server-startup
+      - {{ include "nvflare.fullname" . }}-overseer-startup
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["create", "get", "update", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding

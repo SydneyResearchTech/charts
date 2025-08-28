@@ -6,16 +6,30 @@ global:
 
 project:
   name: "example-project"
+  description: "NVIDIA FLARE sample project yaml file"
   admin: "project-admin@cluster.local"
   # admins: []
   #  - admin@nvidia.com
   organisation: "nvidia"
+  start_date: ""
+  end_date: ""
+  # Path to the application validator
+  app_validator: ""
+  download_job_url: http://download.server.com/
+  external_dns: ""
+  # NB: Follow NVFlare config for easier UI
+  participants: []
+  #  - name: site-1
+  #    type: client
+  #    org: nvidia
+
+pki:
+  cert_manager: false
+  ca_secret:
+    name: ""
 
 dashboard:
   enabled: false
-  image:
-    repository: nvflare/nvflare
-    tag: 2.5.2
   persistence:
     existingVolumeClaim: ""
     accessModes:
@@ -51,14 +65,31 @@ dashboard:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+
+  # This block is for setting up the Dashboard ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
   ingress:
     enabled: false
+    className: ""
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
 overseer:
   enabled: false
   service:
     type: ClusterIP
     port: 8443
+  startup:
+    secretName: ""
   certs:
     secretName: ""
     keyfileName: tls.key
@@ -73,12 +104,14 @@ overseer:
   readinessProbe:
     tcpSocket:
       port: 8443
-  ingress:
-    enabled: false
 
 server:
   enabled: false
   overseerEndpoint: ""
+  logging:
+    level: INFO
+  startup:
+    secretName: ""
   certs:
     secretName: ""
     keyfileName: tls.key
@@ -90,6 +123,9 @@ server:
       port: 8002
     admin:
       port: 8003
+    annotations: {}
+    #  external-dns.alpha.kubernetes.io/hostname: server-1.nvflare.fake.sydney.edu.au
+    #  metallb.universe.tf/allow-shared-ip: "key-to-share-1.2.3.4"
   # ISSUE client auth enabled, no public path for probe
   livenessProbe:
     tcpSocket:
@@ -97,9 +133,30 @@ server:
   readinessProbe:
     tcpSocket:
       port: 8002
+  # This block is for setting up the Server gRPC ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+  ingress:
+    enabled: false
+    className: ""
+    # NB: The server ports utilise HTTP2 gRPC
+    annotations: {}
+      # kubernetes.io/ingress.class: nginx
+      # kubernetes.io/tls-acme: "true"
+      # nginx.ingress.kubernetes.io/ssl-redirect: "true"
+      # nginx.ingress.kubernetes.io/backend-protocol: "GRPC"
+    hosts:
+      - host: chart-example.local
+        paths:
+          - path: /
+            pathType: ImplementationSpecific
+    tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
 
 site:
   enabled: false
+  startup:
+    secretName: ""
   resources: {}
     # We usually recommend not to specify default resources and to leave this as a conscious
     # choice for the user. This also increases chances charts run on environments with little
@@ -112,12 +169,12 @@ site:
     # requests:
     #   cpu: 100m
     #   memory: 128Mi
+
   # Additional volumes on the Site Deployment definition.
   volumes: []
   # - name: foo
   #   persistentVolumeClaim:
   #     claimName: nvflare-datasets
-
   # Additional volumeMounts on the Site Deployment definition.
   volumeMounts: []
   # - name: foo

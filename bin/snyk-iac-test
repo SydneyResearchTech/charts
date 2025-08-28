@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #
+# Get source directory list from command line arguments
 SRCD=( )
 until [[ "$1" == "-"* ]]; do
 	[[ $# -le 0 ]] && break
@@ -37,7 +38,7 @@ for CHART_PATH in "${CHARTS[@]}"; do
 
 	helm dependency list "$CHART_PATH" |grep -q 'missing$' && \
 		helm dependency build "$CHART_PATH" --skip-refresh >/dev/null
-	helm template "$CHART_PATH"${HELM_TEMPLATE_OPTS} --output-dir "$TMPD"
+	helm template "$CHART_PATH"${HELM_TEMPLATE_OPTS} --output-dir "$TMPD" >/dev/null
 done
 
 SNYK_CMD=''
