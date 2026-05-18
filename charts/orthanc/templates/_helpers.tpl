@@ -11,8 +11,27 @@
 {{- print "&connect_timeout=" .Values.PostgreSQL.ConnectionRetryInterval }}
 {{- end }}
 
+{{- define "orthanc.postgresql.database" -}}
+{{- print .Values.global.postgresql.auth.database | default .Values.PostgreSQL.Database }}
+{{- end }}
+
 {{- define "orthanc.postgresql.host" -}}
-{{- print .Values.PostgreSQL.Host | default (print (include "orthanc.fullname" .) "-postgresql") }}
+{{- print .Values.PostgreSQL.Host | default (printf "%s-postgresql" (include "orthanc.fullname" .)) }}
+{{- end }}
+
+{{- define "orthanc.postgresql.username" -}}
+{{- print .Values.global.postgresql.auth.username | default .Values.PostgreSQL.Username }}
+{{- end }}
+
+{{- define "orthanc.postgresql.passwordKey" -}}
+valueFrom:
+  secretKeyRef:
+    name: {{ printf "%s-postgresql" .Release.Name }}
+    key: password
+{{- end }}
+
+{{- define "orthanc.postgresql.port" -}}
+{{- print .Values.PostgreSQL.Port }}
 {{- end }}
 
 {{- define "orthanc.image" -}}

@@ -87,7 +87,7 @@ PostgreSQL:
   Port: 5432
   Database: orthanc
   Username: orthanc
-  Password: ""
+  # Password: ""
   EnableSsl: false
   MaximumConnectionRetries: 10
   ConnectionRetryInterval: 5
@@ -95,9 +95,10 @@ PostgreSQL:
   TransactionMode: Serializable
   EnableVerboseLogs: false
   ConnectionUri: ""
-  existingSecret: ""
-  secretKeys:
-    userPasswordKey: ""
+  auth:
+    existingSecret: ""
+    secretKeys:
+      userPasswordKey: ""
 
 # Sub-Chart Bitnami PostgreSQL RDBMS service
 # helm show values oci://registry-1.docker.io/bitnamicharts/postgresql
@@ -117,7 +118,7 @@ before_orthanc_startup_script: ""
 replicaCount: 1
 
 image:
-  repository: ghcr.io/sydneyresearchtech/orthanc
+  repository: orthancteam/orthanc
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -227,7 +228,6 @@ volumeMounts: []
 #   readOnly: true
 
 nodeSelector:
-  kubernetes.io/arch: amd64
   kubernetes.io/os: linux
 
 tolerations: []

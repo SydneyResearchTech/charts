@@ -1,0 +1,8 @@
+postgresql:
+  enabled: true
+  image:
+    tag: latest
+
+storageDirectory:
+  persistentVolumeClaim:
+    accessModes: [ReadWriteOnce]

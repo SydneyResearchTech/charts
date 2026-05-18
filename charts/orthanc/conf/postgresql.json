@@ -7,10 +7,10 @@
     "IndexConnectionsCount": {{ .Values.PostgreSQL.IndexConnectionsCount }},
     "TransactionMode": {{ .Values.PostgreSQL.TransactionMode | quote }},
     "EnableVerboseLogs": {{ .Values.PostgreSQL.EnableVerboseLogs }},
-    "Port": {{ .Values.PostgreSQL.Port }},
+    "Port": {{ include "orthanc.postgresql.port" . }},
     "Host": {{ include "orthanc.postgresql.host" . | quote }},
-    "Database": {{ .Values.PostgreSQL.Database | quote }},
+    "Database": {{ include "orthanc.postgresql.database" . | quote }},
     "Username": {{ .Values.PostgreSQL.Username | quote }},
-    "Password": {{ .PGPASSWORD | quote }}
+    "Password": "${PGPASSWORD}"
   }
 }

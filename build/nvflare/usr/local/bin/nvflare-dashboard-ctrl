@@ -165,14 +165,15 @@ def main(argv):
     try:
         config.load_incluster_config()
     except Exception as e:
+        print(f'load_incluster_config() {e}')
         config.load_kube_config()
     state = readState()
     # Load configuration
     if argv:
         with open(argv[0],"r") as f:
-            config = yaml.safe_load(f)
+            _config = yaml.safe_load(f)
     else:
-        config = {}
+        _config = {}
 
     while True:
         try:

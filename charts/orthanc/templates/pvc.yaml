@@ -13,8 +13,9 @@ spec:
   resources:
     requests:
       storage: {{ .size }}
-  storageClassName: {{ .storageClassName | default $.Values.global.storageClassName }}
+  {{- if .selector }}
   selector:
     {{- toYaml (.selector | default dict) | nindent 4 }}
   {{ end }}
-{{ end }}
+  {{ end }}
+{{- end }}

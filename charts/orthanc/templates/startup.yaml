@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "orthanc.fullname" . }}-startup
+  labels:
+    {{- include "orthanc.labels" . | nindent 4 }}
+data:
+  generateConfiguration.py: |-
+    {{- tpl (.Files.Get "conf/generateConfiguration.py") . | nindent 4 }}

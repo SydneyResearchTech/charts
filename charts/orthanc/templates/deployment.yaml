@@ -36,8 +36,7 @@ spec:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          # image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          image: {{ include "orthanc.image" . | quote }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
             - {name: GENERATE_HOST_ID_IF_MISSING, value: "false"}
@@ -46,6 +45,8 @@ spec:
             - {name: TRACE_ENABLED, value: {{ .Values.trace_enabled | quote }}}
             - {name: NO_JOBS, value: {{ .Values.no_jobs | quote }}}
             - {name: MALLOC_ARENA_MAX, value: {{ .Values.malloc_arena_max | quote }}}
+            - name: PGPASSWORD
+              {{- include "orthanc.postgresql.passwordKey" . | nindent 14 }}
           ports:
             - name: http
               containerPort: {{ .Values.service.port }}
@@ -57,10 +58,15 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
+            - mountPath: /startup/generateConfiguration.py
+              name: startup
+              subPath: generateConfiguration.py
             - mountPath: /usr/share/orthanc/plugins
-              name: plugins-enabled
+              name: empty-dir
+              subPath: plugins
             - mountPath: /tmp
-              name: tmpd
+              name: empty-dir
+              subPath: tmp
             - mountPath: /etc/orthanc
               name: orthanc-config
               readOnly: true
@@ -75,21 +81,24 @@ spec:
             {{- toYaml . | nindent 12 }}
           {{- end }}
       volumes:
-        - name: plugins-enabled
+        - name: empty-dir
           emptyDir: {}
-        - name: tmpd
-          emptyDir: {}
+        - name: startup
+          configMap:
+            name: {{ include "orthanc.fullname" . }}-startup
         - name: orthanc-config
           configMap:
             name: {{ include "orthanc.fullname" . }}
         - name: orthanc-secrets
           secret:
             secretName: {{ include "orthanc.fullname" . }}
-        - name: index-directory
-          emptyDir: {}
+        #- name: index-directory
+        #  emptyDir: {}
         - name: storage
           persistentVolumeClaim:
-            claimName: {{ .Values.storageDirectory.existingVolumeClaim | default (printf "%s-%s" (include "orthanc.fullname" .) "storage") }}
+            claimName: >-
+              {{ .Values.storageDirectory.existingVolumeClaim | 
+                 default (printf "%s-%s" (include "orthanc.fullname" .) "storage") }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
