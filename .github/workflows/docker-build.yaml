@@ -78,7 +78,7 @@ jobs:
           echo "APP_VERSION=-${APP_VERSION}" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v7
         with:
           cache-from: type=registry,ref=ghcr.io/sydneyresearchtech/${{ matrix.context }}:buildcache
           cache-to: type=registry,ref=ghcr.io/sydneyresearchtech/${{ matrix.context }}:buildcache,mode=max
