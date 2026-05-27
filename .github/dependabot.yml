@@ -1,0 +1,21 @@
+version: 2
+updates:
+- package-ecosystem: "github-actions"
+  directory: "/"
+  schedule:
+    interval: "weekly"
+
+#- directory: "/build/diagnostics"
+#  package-ecosystem: docker
+#  schedule:
+#    interval: "weekly"
+#  ignore:
+#  - dependency-name: "*"
+#    update-types: ["version-update:semver-major"]
+#- directory: "/build/artemis"
+#  package-ecosystem: docker
+#  schedule:
+#    interval: "weekly"
+#  ignore:
+#  - dependency-name: "*"
+#    update-types: ["version-update:semver-major"]
