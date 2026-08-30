@@ -12,7 +12,6 @@ EOT
 RUN git clone https://bitbucket.org/xnatdev/xnat_populate.git
 
 
-
 FROM groovy:3.0.14
 
 COPY --from=builder /home/groovy/xnat_populate/ ./
