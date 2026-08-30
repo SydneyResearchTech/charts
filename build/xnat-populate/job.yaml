@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: xnat-populate
+spec:
+  ttlSecondsAfterFinished: 60
+  template:
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 2000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: xnat-populate
+        image: xnat-populate:0.1.0
+        args: ["groovy", "PopulateXnat.groovy", "--insecure", "--clean"]
+        imagePullPolicy: Never
+        env:
+        - name: HOME
+          value: /root
+        - name: XNAT_USER
+          valueFrom:
+            secretKeyRef:
+              name: xnat-xnat-web-admin
+              key: username
+        - name: XNAT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: xnat-xnat-web-admin
+              key: password
+        - name: XNAT_URL
+          value: http://xnat-xnat-web.default.svc
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: [ALL]
+          readOnlyRootFilesystem: true
+        volumeMounts:
+        - mountPath: /home/groovy/data
+          name: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: xnat-populate-data
+      restartPolicy: Never
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: xnat-populate-data
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: standard
+  volumeMode: Filesystem
