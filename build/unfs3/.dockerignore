@@ -1,0 +1,4 @@
+Makefile
+.*.swp
+storageClass.tpl.yaml
+deploy.yaml
