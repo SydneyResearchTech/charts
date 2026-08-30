@@ -69,9 +69,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Docker meta
-        id: meta
-
       - name: Get Docker image tag
         run: |
           TAG=$(sed -n 's/^ARG DOCKER_IMAGE_TAG=\(.*\)$/\1/p' build/${{ matrix.context }}/Dockerfile)
