@@ -69,13 +69,17 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Docker meta
+        id: meta
+
       - name: Get Docker image tag
         run: |
           TAG=$(sed -n 's/^ARG DOCKER_IMAGE_TAG=\(.*\)$/\1/p' build/${{ matrix.context }}/Dockerfile)
           [ -z $TAG ] && TAG=0.1.0
           APP_VERSION=$(sed -n 's/^ARG APP_VERSION=\(.*\)$/\1/p' build/${{ matrix.context }}/Dockerfile)
+          [ -z $APP_VERSION ] && APP_VERSION='' || APP_VERSION="-${APP_VERSION}"
           echo "DOCKER_IMAGE_TAG=${TAG}"     >> "$GITHUB_ENV"
-          echo "APP_VERSION=-${APP_VERSION}" >> "$GITHUB_ENV"
+          echo "APP_VERSION=${APP_VERSION}" >> "$GITHUB_ENV"
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v7
